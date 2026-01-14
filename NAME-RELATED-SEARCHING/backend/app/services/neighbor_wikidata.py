@@ -1,49 +1,21 @@
-"""
-neighbor_wikidata.py
-
-Nhiệm vụ:
-- Nhận vào 1 Wikidata ID (Qxxx)
-- Trả về danh sách Wikidata ID của các "neighbor" (người liên quan)
-
-Định nghĩa neighbor (MVP):
-- Entity có liên kết trực tiếp
-- instance of human (P31 = Q5)
-
-KHÔNG crawl HTML Wikipedia
-CHỈ dùng Wikidata SPARQL API
-"""
-
 from typing import List
 import requests
 
-# =========================
-# CONFIG
-# =========================
-
 WIKIDATA_ENDPOINT = "https://query.wikidata.org/sparql"
 
-# ⚠️ User-Agent BẮT BUỘC phải có contact thật
 HEADERS = {
-    "Accept": "application/sparql+json",
     "User-Agent": (
         "WikiBFS/1.0 "
-        "(https://github.com/yourname/name-related-searching; "
-        "contact: your_email@gmail.com)"
+        "(https://github.com/LeeVHoangtk3/name-related-searching; "
+        "contact: leviethoangtk3@gmail.com)"
     ),
 }
 
+TIMEOUT = 20
 DEFAULT_LIMIT = 50
-TIMEOUT = 15  # seconds
 
-
-# =========================
-# SPARQL QUERY BUILDER
-# =========================
 
 def build_neighbor_query(wikidata_id: str, limit: int = DEFAULT_LIMIT) -> str:
-    """
-    Build SPARQL query to fetch human neighbors of a Wikidata entity.
-    """
     return f"""
     SELECT ?neighbor WHERE {{
       wd:{wikidata_id} ?p ?neighbor .
@@ -53,50 +25,41 @@ def build_neighbor_query(wikidata_id: str, limit: int = DEFAULT_LIMIT) -> str:
     """
 
 
-# =========================
-# CORE FUNCTION
-# =========================
-
 def get_neighbors(wikidata_id: str) -> List[str]:
-    """
-    Get neighbor Wikidata IDs for a given Wikidata ID.
-
-    Args:
-        wikidata_id (str): e.g. "Q34660"
-
-    Returns:
-        List[str]: list of Wikidata IDs, e.g. ["Q123", "Q456"]
-    """
-
     query = build_neighbor_query(wikidata_id)
 
-    # DÙNG POST (ổn định hơn GET)
     response = requests.post(
         WIKIDATA_ENDPOINT,
-        data={"query": query},
+        data={
+            "query": query,
+            "format": "json",
+        },
         headers=HEADERS,
         timeout=TIMEOUT,
     )
 
-    # Nếu Wikidata trả lỗi → fail sớm cho dễ debug
     if response.status_code != 200:
         raise RuntimeError(
-            f"Wikidata error {response.status_code}: "
+            f"Wikidata HTTP {response.status_code}\n"
             f"{response.text[:300]}"
         )
 
-    # Parse JSON
+    # ✅ FIX: chấp nhận sparql-results+json
+    content_type = response.headers.get("Content-Type", "")
+    if "+json" not in content_type:
+        raise RuntimeError(
+            "Wikidata did NOT return JSON!\n"
+            f"Content-Type: {content_type}\n"
+            f"Body:\n{response.text[:300]}"
+        )
+
     data = response.json()
-    bindings = data.get("results", {}).get("bindings", [])
+    bindings = data["results"]["bindings"]
 
     neighbors: List[str] = []
-
     for item in bindings:
         uri = item["neighbor"]["value"]
-        # Ví dụ:
-        # https://www.wikidata.org/entity/Q12345
-        qid = uri.split("/")[-1]
-        neighbors.append(qid)
+        neighbors.append(uri.split("/")[-1])
 
     return neighbors
 
@@ -105,14 +68,10 @@ def get_neighbors(wikidata_id: str) -> List[str]:
 # MANUAL TEST
 # =========================
 
-if __name__ == "__main__":
-    # J. K. Rowling = Q34660
-    test_qid = "Q34660"
+# if __name__ == "__main__":
+#     print("Testing neighbors for Q34660 (J. K. Rowling)")
+#     result = get_neighbors("Q34660")
 
-    print(f"Testing neighbors for {test_qid} ...")
-
-    result = get_neighbors(test_qid)
-
-    print(f"Found {len(result)} neighbors")
-    for q in result[:10]:
-        print("-", q)
+#     print(f"Found {len(result)} neighbors")
+#     for q in result[:10]:
+#         print("-", q)
