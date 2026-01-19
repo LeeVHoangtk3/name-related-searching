@@ -68,5 +68,104 @@
       }
     ],
     "_created_at": 1768844412.126698
+  },
+  "normalize:hồ chí minh": {
+    "value": [
+      {
+        "qid": "Q1854",
+        "label": "Ho Chi Minh City",
+        "description": "municipality in Vietnam",
+        "score": 0
+      },
+      {
+        "qid": "Q36014",
+        "label": "Ho Chi Minh",
+        "description": "Vietnamese communist leader, president of North Vietnam from 1945 (1890–1969)",
+        "score": 0
+      },
+      {
+        "qid": "Q47512596",
+        "label": "Ho Chi-Minh",
+        "description": "painting by Boris Chaliapin",
+        "score": 0
+      },
+      {
+        "qid": "Q5874021",
+        "label": "Hồ Chí Minh Prize",
+        "description": "honorary award given by the government of Vietnam",
+        "score": 0
+      },
+      {
+        "qid": "Q47509634",
+        "label": "Ho Chi-Minh",
+        "description": "painting by Jim Sharpe",
+        "score": 0
+      }
+    ],
+    "_created_at": 1768845488.1957545
+  },
+  "normalize:võ nguyên giáp": {
+    "value": [
+      {
+        "qid": "Q179910",
+        "label": "Võ Nguyên Giáp",
+        "description": "Vietnamese general and communist politician (1911–2013)",
+        "score": 0
+      },
+      {
+        "qid": "Q47509617",
+        "label": "Vo Nguyen Giap",
+        "description": "painting by Hector Garrido",
+        "score": 0
+      },
+      {
+        "qid": "Q47509879",
+        "label": "Vo Nguyen Giap",
+        "description": "painting by Louis S. Glanzman",
+        "score": 0
+      },
+      {
+        "qid": "Q47511800",
+        "label": "Vo Nguyen Giap",
+        "description": "painting by David Stone Martin",
+        "score": 0
+      },
+      {
+        "qid": "Q2349684",
+        "label": "Hanoi Highway",
+        "description": "boulevard in Ho Chi Minh City, Vietnam",
+        "score": 0
+      }
+    ],
+    "_created_at": 1768845489.1017087
+  },
+  "normalize:nguyễn ái quốc": {
+    "value": [
+      {
+        "qid": "Q36014",
+        "label": "Ho Chi Minh",
+        "description": "Vietnamese communist leader, president of North Vietnam from 1945 (1890–1969)",
+        "score": 0
+      },
+      {
+        "qid": "Q12901199",
+        "label": "Nguyễn Ái Quốc",
+        "description": "",
+        "score": 0
+      },
+      {
+        "qid": "Q136026380",
+        "label": "Nguyễn Ái Quốc – Hồ Chí Minh",
+        "description": "",
+        "score": 0
+      },
+      {
+        "qid": "Q117463274",
+        "label": "Escape from HK",
+        "description": "2003 Vietnamese film",
+        "score": 0
+      }
+    ],
+    "_created_at": 1768845525.632668
   }
 }
