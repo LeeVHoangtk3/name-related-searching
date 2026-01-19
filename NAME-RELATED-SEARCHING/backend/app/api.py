@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 
 from app.services.normalize import normalize_name
-from app.services.path_service import find_path_cached
+from app.services.path_service import find_path_cached, find_path_bidirectional
 
 app = FastAPI(title="Name Related Searching API")
 
@@ -29,7 +29,7 @@ class Person(BaseModel):
 class FindPathResponse(BaseModel):
     from_person: Optional[Person]
     to_person: Optional[Person]
-    path: Optional[List[str]]
+    path: Optional[List[Person]]
     message: Optional[str] = None
 
 
@@ -48,10 +48,10 @@ def find_path_api(body: FindPathRequest):
 
     for f in from_candidates:
         for t in to_candidates:
-            path = find_path_cached(
+            path = find_path_bidirectional(
                 start_qid=f["qid"],
                 target_qid=t["qid"],
-                max_depth=3,
+                max_depth=4,
             )
             if path:
                 return FindPathResponse(

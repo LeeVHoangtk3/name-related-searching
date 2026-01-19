@@ -167,5 +167,285 @@
       }
     ],
     "_created_at": 1768845525.632668
+  },
+  "normalize:steve jobs": {
+    "value": [
+      {
+        "qid": "Q19837",
+        "label": "Steve Jobs",
+        "description": "American entrepreneur; co-founder of Apple Inc. (1955–2011)",
+        "score": 0
+      },
+      {
+        "qid": "Q18754959",
+        "label": "Steve Jobs",
+        "description": "2015 film directed by Danny Boyle",
+        "score": 0
+      },
+      {
+        "qid": "Q109983309",
+        "label": "Steve Jobs",
+        "description": "person identified in the Museu da Pessoa collection",
+        "score": 0
+      },
+      {
+        "qid": "Q625645",
+        "label": "Steve Jobs",
+        "description": "2011 authorized biography by Walter Isaacson",
+        "score": 0
+      },
+      {
+        "qid": "Q28941414",
+        "label": "Steve Jobs",
+        "description": "2015 paperback edition published by Simon & Schuster",
+        "score": 0
+      }
+    ],
+    "_created_at": 1768846335.2939458
+  },
+  "normalize:apple": {
+    "value": [
+      {
+        "qid": "Q312",
+        "label": "Apple Inc.",
+        "description": "American multinational technology company based in Cupertino, California",
+        "score": 0
+      },
+      {
+        "qid": "Q213710",
+        "label": "Apple Records",
+        "description": "UK international record label; imprint of Apple Corps Ltd.",
+        "score": 0
+      },
+      {
+        "qid": "Q89",
+        "label": "apple",
+        "description": "fruit of the apple tree",
+        "score": 0
+      },
+      {
+        "qid": "Q20056642",
+        "label": "Apple Music",
+        "description": "Internet online music service by Apple",
+        "score": 0
+      },
+      {
+        "qid": "Q26944931",
+        "label": "Apple",
+        "description": "unisex given name",
+        "score": 0
+      }
+    ],
+    "_created_at": 1768846336.2697294
+  },
+  "normalize:android": {
+    "value": [
+      {
+        "qid": "Q94",
+        "label": "Android",
+        "description": "operating system created by Google for use in mobile devices",
+        "score": 0
+      },
+      {
+        "qid": "Q181787",
+        "label": "android",
+        "description": "robot resembling a human, or in other uses specifically a human",
+        "score": 0
+      },
+      {
+        "qid": "Q79576",
+        "label": "Google Play",
+        "description": "digital software distribution platform from Google",
+        "score": 0
+      },
+      {
+        "qid": "Q122312144",
+        "label": "Android",
+        "description": "2020 video game",
+        "score": 0
+      },
+      {
+        "qid": "Q85684089",
+        "label": "Android 11",
+        "description": "11th major release of the Android mobile operating system",
+        "score": 0
+      }
+    ],
+    "_created_at": 1768846434.992914
+  },
+  "normalize:iphone": {
+    "value": [
+      {
+        "qid": "Q2766",
+        "label": "iPhone",
+        "description": "line of smartphones developed and marketed by Apple Inc.",
+        "score": 0
+      },
+      {
+        "qid": "Q621427",
+        "label": "iPhone",
+        "description": "first smartphone of the iPhone line by Apple Inc.",
+        "score": 0
+      },
+      {
+        "qid": "Q48493",
+        "label": "iOS",
+        "description": "mobile operating system by Apple Inc.",
+        "score": 0
+      },
+      {
+        "qid": "Q26831164",
+        "label": "iPhone 7",
+        "description": "Tenth-generation smartphones by Apple Inc.",
+        "score": 0
+      },
+      {
+        "qid": "Q39510168",
+        "label": "iPhone X",
+        "description": "group of smartphone models produced by Apple Inc.",
+        "score": 0
+      }
+    ],
+    "_created_at": 1768846496.1206472
+  },
+  "normalize:barack obama": {
+    "value": [
+      {
+        "qid": "Q76",
+        "label": "Barack Obama",
+        "description": "president of the United States from 2009 to 2017",
+        "score": 0
+      },
+      {
+        "qid": "Q649593",
+        "label": "Barack Obama Sr.",
+        "description": "economist and father of Barack Obama Jr. (1934–1982)",
+        "score": 0
+      },
+      {
+        "qid": "Q59661289",
+        "label": "Barack Obama Presidential Library",
+        "description": "reference unit of the National Archives and Records Administration",
+        "score": 0
+      },
+      {
+        "qid": "Q47513588",
+        "label": "Barack Obama",
+        "description": "painting by Michael A. Glier",
+        "score": 0
+      },
+      {
+        "qid": "Q1379733",
+        "label": "presidency of Barack Obama",
+        "description": "44th presidential administration and cabinet of the USA (2009-2017)",
+        "score": 0
+      }
+    ],
+    "_created_at": 1768846587.6289093
+  },
+  "normalize:joe biden": {
+    "value": [
+      {
+        "qid": "Q6279",
+        "label": "Joe Biden",
+        "description": "46th President of the United States (2021–2025)",
+        "score": 0
+      },
+      {
+        "qid": "Q65053339",
+        "label": "Joe Biden",
+        "description": "fictional parody character from The Onion loosely based on the real Joe Biden",
+        "score": 0
+      },
+      {
+        "qid": "Q97738250",
+        "label": "inauguration of Joe Biden",
+        "description": "59th United States presidential inauguration",
+        "score": 0
+      },
+      {
+        "qid": "Q104922747",
+        "label": "list of executive actions by Joe Biden",
+        "description": "Wikimedia list article",
+        "score": 0
+      },
+      {
+        "qid": "Q54495162",
+        "label": "family of Joe Biden",
+        "description": "First Family of the United States from 2021 to 2025",
+        "score": 0
+      }
+    ],
+    "_created_at": 1768846596.8268158
+  },
+  "normalize:michelle obama": {
+    "value": [
+      {
+        "qid": "Q13133",
+        "label": "Michelle Obama",
+        "description": "lawyer and former First Lady of the United States (2009-2017) President Barack Obama",
+        "score": 0
+      },
+      {
+        "qid": "Q23663680",
+        "label": "Michelle Obama: A plea for education",
+        "description": "Elizabeth G. Anderson School",
+        "score": 0
+      },
+      {
+        "qid": "Q115059310",
+        "label": "Michelle Obama, FLOTUS",
+        "description": "2016 painted electrical box by Maddu Huacuja in Boston",
+        "score": 0
+      },
+      {
+        "qid": "Q110575243",
+        "label": "The Michelle Obama Podcast",
+        "description": "podcast",
+        "score": 0
+      },
+      {
+        "qid": "Q18021670",
+        "label": "Michelle Obama, Hillary Clinton present 2012 International Women of Courage Awards",
+        "description": "Wikinews article",
+        "score": 0
+      }
+    ],
+    "_created_at": 1768846709.277133
+  },
+  "normalize:tim cook": {
+    "value": [
+      {
+        "qid": "Q265852",
+        "label": "Tim Cook",
+        "description": "American business executive",
+        "score": 0
+      },
+      {
+        "qid": "Q108053263",
+        "label": "Tim Cook",
+        "description": "football player (born 1994)",
+        "score": 0
+      },
+      {
+        "qid": "Q112552173",
+        "label": "Tim Cook",
+        "description": "anesthesiologist",
+        "score": 0
+      },
+      {
+        "qid": "Q7803348",
+        "label": "Tim Cook",
+        "description": "Canadian military historian and author (1971-2025)",
+        "score": 0
+      },
+      {
+        "qid": "Q56965559",
+        "label": "Timothy W Cook",
+        "description": "researcher, engineer",
+        "score": 0
+      }
+    ],
+    "_created_at": 1768846728.7568033
   }
 }
