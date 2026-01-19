@@ -1,84 +1,57 @@
-from typing import List, Dict
 import requests
+from typing import List, Dict
+
+from app.services.file_cache import get_cache, set_cache
+from app.services.input_utils import normalize_input
 
 WIKIDATA_SEARCH_API = "https://www.wikidata.org/w/api.php"
 
 HEADERS = {
-    "User-Agent": (
-        "WikiBFS/1.0 "
-        "(https://github.com/LeeVHoangtk3/name-related-searching; "
-        "contact: leviethoangtk3@gmail.com)"
-    )
+    "User-Agent": "name-related-searching/0.1 (contact: leviethoangtk3@gmail.com)",
+    "Accept": "application/json",
 }
 
-TIMEOUT = 15
-DEFAULT_LIMIT = 5
+def normalize_name(name: str, limit: int = 5) -> List[Dict]:
+    normalized = normalize_input(name)
+    cache_key = f"normalize:{normalized}"
 
-
-def normalize_name(
-    name: str,
-    limit: int = DEFAULT_LIMIT,
-    language: str = "en",
-) -> List[Dict]:
+    cached = get_cache("normalize.json", cache_key, ttl=7 * 86400)
+    if cached is not None:
+        return cached
 
     params = {
         "action": "wbsearchentities",
-        "search": name,
-        "language": language,
+        "search": normalized,
+        "language": "en",
         "format": "json",
         "limit": limit,
-        # chỉ ưu tiên entity là người
-        "type": "item",
     }
 
-    response = requests.get(
+    res = requests.get(
         WIKIDATA_SEARCH_API,
         params=params,
         headers=HEADERS,
-        timeout=TIMEOUT,
+        timeout=15,
     )
 
-    if response.status_code != 200:
-        raise RuntimeError(
-            f"Wikidata search error {response.status_code}: "
-            f"{response.text[:300]}"
-        )
+    # ❗ Không để crash API
+    try:
+        res.raise_for_status()
+        data = res.json()
+    except Exception as e:
+        print("❌ Wikidata search failed")
+        print("Status:", res.status_code)
+        print("Body:", res.text[:500])
+        return []
 
-    data = response.json()
-    search_results = data.get("search", [])
-
-    candidates: List[Dict] = []
-
-    for item in search_results:
-        # chỉ giữ entity là human nếu có description
-        candidate = {
+    results = []
+    for item in data.get("search", []):
+        results.append({
             "qid": item.get("id"),
             "label": item.get("label"),
             "description": item.get("description", ""),
-            "score": item.get("score", 0.0),
-        }
-        candidates.append(candidate)
+            "score": item.get("score", 0),
+        })
 
-    return candidates
-
-
-# =========================
-# MANUAL TEST
-# =========================
-
-if __name__ == "__main__":
-    tests = [
-        "Michael Jordan",
-        "Nguyễn Nhật Ánh",
-        "John Smith",
-    ]
-
-    for name in tests:
-        print(f"\nNormalize: {name}")
-        results = normalize_name(name, limit=5, language="en")
-
-        for c in results:
-            print(
-                f"- {c['qid']:8} | {c['label']} "
-                f"({c['description']}) | score={c['score']}"
-            )
+    set_cache("normalize.json", cache_key, results)
+    return results

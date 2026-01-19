@@ -1,0 +1,72 @@
+{
+  "normalize:elon musk": {
+    "value": [
+      {
+        "qid": "Q317521",
+        "label": "Elon Musk",
+        "description": "businessman and entrepreneur (born 1971)",
+        "score": 0
+      },
+      {
+        "qid": "Q121968158",
+        "label": "Elon Musk: Tesla, SpaceX a hledání fantastické budoucnosti",
+        "description": "book edition published in 2015",
+        "score": 0
+      },
+      {
+        "qid": "Q111725317",
+        "label": "acquisition of Twitter by Elon Musk",
+        "description": "business acquisition in 2022",
+        "score": 0
+      },
+      {
+        "qid": "Q122380405",
+        "label": "Elon Musk",
+        "description": "2023 authorized biography by Walter Isaacson",
+        "score": 0
+      },
+      {
+        "qid": "Q123134390",
+        "label": "Elon Musk",
+        "description": "2023 single by Shallipopi",
+        "score": 0
+      }
+    ],
+    "_created_at": 1768844411.422344
+  },
+  "normalize:donald trump": {
+    "value": [
+      {
+        "qid": "Q22686",
+        "label": "Donald Trump",
+        "description": "President of the United States (2017–2021, 2025–present)",
+        "score": 0
+      },
+      {
+        "qid": "Q3713655",
+        "label": "Donald Trump Jr.",
+        "description": "American businessman and reality television personality (born 1977)",
+        "score": 0
+      },
+      {
+        "qid": "Q27947481",
+        "label": "Donald Trump",
+        "description": "American physician",
+        "score": 0
+      },
+      {
+        "qid": "Q23000825",
+        "label": "Donald Trump III",
+        "description": "son of Donald Trump Jr. (born 2009)",
+        "score": 0
+      },
+      {
+        "qid": "Q699872",
+        "label": "2016 United States presidential election",
+        "description": "58th quadrennial U.S. presidential election",
+        "score": 0
+      }
+    ],
+    "_created_at": 1768844412.126698
+  }
+}

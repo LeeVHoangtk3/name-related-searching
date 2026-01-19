@@ -1,77 +1,50 @@
-from typing import List
 import requests
+from typing import List
 
-WIKIDATA_ENDPOINT = "https://query.wikidata.org/sparql"
+from app.services.file_cache import get_cache, set_cache
+
+SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
 
 HEADERS = {
-    "User-Agent": (
-        "WikiBFS/1.0 "
-        "(https://github.com/LeeVHoangtk3/name-related-searching; "
-        "contact: leviethoangtk3@gmail.com)"
-    ),
+    "User-Agent": "name-related-searching/0.1 (contact: leviethoangtk3@gmail.com)",
+    "Accept": "application/sparql-results+json",
 }
 
-TIMEOUT = 20
-DEFAULT_LIMIT = 50
 
 
-def build_neighbor_query(wikidata_id: str, limit: int = DEFAULT_LIMIT) -> str:
-    return f"""
+def get_neighbors(qid: str) -> List[str]:
+    cache_key = f"neighbors:{qid}"
+    cached = get_cache("neighbors.json", cache_key, ttl=86400)
+    if cached is not None:
+        return cached
+
+    query = f"""
     SELECT ?neighbor WHERE {{
-      wd:{wikidata_id} ?p ?neighbor .
+      wd:{qid} ?p ?neighbor .
       ?neighbor wdt:P31 wd:Q5 .
     }}
-    LIMIT {limit}
+    LIMIT 50
     """
 
-
-def get_neighbors(wikidata_id: str) -> List[str]:
-    query = build_neighbor_query(wikidata_id)
-
-    response = requests.post(
-        WIKIDATA_ENDPOINT,
-        data={
-            "query": query,
-            "format": "json",
-        },
+    res = requests.post(
+        SPARQL_ENDPOINT,
+        data={"query": query},
         headers=HEADERS,
-        timeout=TIMEOUT,
+        timeout=20,
     )
 
-    if response.status_code != 200:
-        raise RuntimeError(
-            f"Wikidata HTTP {response.status_code}\n"
-            f"{response.text[:300]}"
-        )
+    try:
+        data = res.json()
+    except Exception as e:
+        print("❌ Wikidata response not JSON")
+        print("Status:", res.status_code)
+        print("Body:", res.text[:500])
+        return []   # 🔥 QUAN TRỌNG: không crash API
 
-    # ✅ FIX: chấp nhận sparql-results+json
-    content_type = response.headers.get("Content-Type", "")
-    if "+json" not in content_type:
-        raise RuntimeError(
-            "Wikidata did NOT return JSON!\n"
-            f"Content-Type: {content_type}\n"
-            f"Body:\n{response.text[:300]}"
-        )
-
-    data = response.json()
-    bindings = data["results"]["bindings"]
-
-    neighbors: List[str] = []
-    for item in bindings:
+    neighbors = []
+    for item in data.get("results", {}).get("bindings", []):
         uri = item["neighbor"]["value"]
         neighbors.append(uri.split("/")[-1])
 
+    set_cache("neighbors.json", cache_key, neighbors)
     return neighbors
-
-
-# =========================
-# MANUAL TEST
-# =========================
-
-# if __name__ == "__main__":
-#     print("Testing neighbors for Q34660 (J. K. Rowling)")
-#     result = get_neighbors("Q34660")
-
-#     print(f"Found {len(result)} neighbors")
-#     for q in result[:10]:
-#         print("-", q)
