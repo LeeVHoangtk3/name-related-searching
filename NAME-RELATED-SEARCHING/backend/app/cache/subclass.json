@@ -1,0 +1,82 @@
+{
+  "subclass:Q3658341:Q43229": {
+    "value": false,
+    "_created_at": 1769622637.678138
+  },
+  "subclass:Q15632617:Q43229": {
+    "value": false,
+    "_created_at": 1769622638.5266051
+  },
+  "subclass:Q3658341:Q4164871": {
+    "value": false,
+    "_created_at": 1769622640.3658264
+  },
+  "subclass:Q15632617:Q4164871": {
+    "value": false,
+    "_created_at": 1769622641.2328856
+  },
+  "subclass:Q263233:Q43229": {
+    "value": false,
+    "_created_at": 1769622642.1439967
+  },
+  "subclass:Q263233:Q4164871": {
+    "value": false,
+    "_created_at": 1769622644.010272
+  },
+  "subclass:Q13406463:Q43229": {
+    "value": false,
+    "_created_at": 1769622644.9863744
+  },
+  "subclass:Q13406463:Q4164871": {
+    "value": false,
+    "_created_at": 1769622645.955132
+  },
+  "subclass:Q8436:Q43229": {
+    "value": true,
+    "_created_at": 1769622646.8231132
+  },
+  "subclass:Q8436:Q4164871": {
+    "value": false,
+    "_created_at": 1769622647.6481514
+  },
+  "subclass:Q862444:Q4164871": {
+    "value": false,
+    "_created_at": 1769622650.4840174
+  },
+  "subclass:Q5:Q43229": {
+    "value": false,
+    "_created_at": 1769622654.1282923
+  },
+  "subclass:Q5:Q4164871": {
+    "value": false,
+    "_created_at": 1769622655.7810187
+  },
+  "subclass:Q7075:Q43229": {
+    "value": true,
+    "_created_at": 1769622701.247536
+  },
+  "subclass:Q7075:Q4164871": {
+    "value": false,
+    "_created_at": 1769622702.6200485
+  },
+  "subclass:Q166118:Q4164871": {
+    "value": false,
+    "_created_at": 1769622704.1536756
+  },
+  "subclass:Q3305213:Q43229": {
+    "value": false,
+    "_created_at": 1769622706.0260894
+  },
+  "subclass:Q3305213:Q4164871": {
+    "value": false,
+    "_created_at": 1769622707.015657
+  },
+  "subclass:Q15284636:Q43229": {
+    "value": false,
+    "_created_at": 1769622707.9947028
+  },
+  "subclass:Q15284636:Q4164871": {
+    "value": false,
+    "_created_at": 1769622708.9393723
+  }
+}

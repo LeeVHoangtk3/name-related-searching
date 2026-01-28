@@ -1,0 +1,419 @@
+{
+  "entity_type:Q76": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622078.9120119
+  },
+  "entity_type:Q6279": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622081.9639502
+  },
+  "entity_type:Q100741820": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622083.3037899
+  },
+  "entity_type:Q100741824": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622084.4936972
+  },
+  "entity_type:Q184267": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622085.8867865
+  },
+  "entity_type:Q5081790": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622087.120207
+  },
+  "entity_type:Q98854090": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622088.3382218
+  },
+  "entity_type:Q235349": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622089.724309
+  },
+  "entity_type:Q813332": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622091.019658
+  },
+  "entity_type:Q5944264": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622092.2803328
+  },
+  "entity_type:Q19285477": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622093.9229453
+  },
+  "entity_type:Q20177093": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622095.160866
+  },
+  "entity_type:Q96318245": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622096.6619985
+  },
+  "entity_type:Q97588420": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622098.2884543
+  },
+  "entity_type:Q98854696": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622099.5519826
+  },
+  "entity_type:Q4115068": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622101.6534858
+  },
+  "entity_type:Q15982322": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622103.0132148
+  },
+  "entity_type:Q15982326": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622104.4505265
+  },
+  "entity_type:Q773197": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622106.087696
+  },
+  "entity_type:Q4382677": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622107.758052
+  },
+  "entity_type:Q15982167": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622109.502813
+  },
+  "entity_type:Q15982189": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622111.3501534
+  },
+  "entity_type:Q15982309": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622113.0291266
+  },
+  "entity_type:Q15982321": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622114.335703
+  },
+  "entity_type:Q649593": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622115.657913
+  },
+  "entity_type:Q766106": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622117.427171
+  },
+  "entity_type:Q15070044": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622118.8009596
+  },
+  "entity_type:Q15070048": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622120.0721385
+  },
+  "entity_type:Q13133": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622121.3744636
+  },
+  "entity_type:Q358561": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622122.6768112
+  },
+  "entity_type:Q708172": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622124.2120228
+  },
+  "entity_type:Q2856311": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622125.7130775
+  },
+  "entity_type:Q2856335": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622126.970794
+  },
+  "entity_type:Q15982330": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622129.178252
+  },
+  "entity_type:Q15982328": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622130.5038424
+  },
+  "entity_type:Q25649": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622131.8734467
+  },
+  "entity_type:Q65053339": {
+    "value": [
+      "Q3658341",
+      "Q15632617"
+    ],
+    "_created_at": 1769622133.21407
+  },
+  "entity_type:Q97738250": {
+    "value": [
+      "Q263233"
+    ],
+    "_created_at": 1769622133.855573
+  },
+  "entity_type:Q104922747": {
+    "value": [
+      "Q13406463"
+    ],
+    "_created_at": 1769622134.6754665
+  },
+  "entity_type:Q54495162": {
+    "value": [
+      "Q8436",
+      "Q862444"
+    ],
+    "_created_at": 1769622135.5486116
+  },
+  "entity_type:Q15982183": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622136.1859007
+  },
+  "entity_type:Q15982192": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622138.0091822
+  },
+  "entity_type:Q59661289": {
+    "value": [
+      "Q7075",
+      "Q166118"
+    ],
+    "_created_at": 1769622139.3718185
+  },
+  "entity_type:Q47513588": {
+    "value": [
+      "Q3305213"
+    ],
+    "_created_at": 1769622140.0235326
+  },
+  "entity_type:Q1379733": {
+    "value": [
+      "Q15284636"
+    ],
+    "_created_at": 1769622140.6586967
+  },
+  "entity_type:Q96318259": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622652.2501574
+  },
+  "entity_type:Q96318257": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622657.6297972
+  },
+  "entity_type:Q100276774": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622659.7961664
+  },
+  "entity_type:Q100598212": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622661.7443583
+  },
+  "entity_type:Q100598223": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622663.7322838
+  },
+  "entity_type:Q100598230": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622665.4227757
+  },
+  "entity_type:Q100605104": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622667.0793316
+  },
+  "entity_type:Q100605123": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622669.3067253
+  },
+  "entity_type:Q100605126": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622671.6200943
+  },
+  "entity_type:Q100605198": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622673.2614224
+  },
+  "entity_type:Q100605200": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622674.8361564
+  },
+  "entity_type:Q101145582": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622676.4940906
+  },
+  "entity_type:Q101145631": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622678.5299616
+  },
+  "entity_type:Q101145653": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622680.254981
+  },
+  "entity_type:Q102866463": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622681.929005
+  },
+  "entity_type:Q102868699": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622683.4896474
+  },
+  "entity_type:Q131414564": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622685.1276057
+  },
+  "entity_type:Q117322676": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622686.655446
+  },
+  "entity_type:Q96197845": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622688.2050238
+  },
+  "entity_type:Q115658355": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622692.5781217
+  },
+  "entity_type:Q8068634": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622694.2693539
+  },
+  "entity_type:Q24004768": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622695.9576917
+  },
+  "entity_type:Q96197836": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622697.6641207
+  },
+  "entity_type:Q96197842": {
+    "value": [
+      "Q5"
+    ],
+    "_created_at": 1769622699.4393663
+  }
+}

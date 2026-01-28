@@ -6,7 +6,7 @@ def find_path(
     start: str,
     target: str,
     get_neighbors: Callable[[str], List[str]],
-    max_depth: int = 3,
+    max_depth: int = 4,
 ) -> Optional[List[str]]:
     queue = deque([(start, [start], 0)])
     visited = {start}

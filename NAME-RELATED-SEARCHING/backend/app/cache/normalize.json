@@ -341,7 +341,7 @@
         "score": 0
       }
     ],
-    "_created_at": 1768846587.6289093
+    "_created_at": 1769622077.2208755
   },
   "normalize:joe biden": {
     "value": [
@@ -376,7 +376,7 @@
         "score": 0
       }
     ],
-    "_created_at": 1768846596.8268158
+    "_created_at": 1769622078.1488414
   },
   "normalize:michelle obama": {
     "value": [
@@ -447,5 +447,79 @@
       }
     ],
     "_created_at": 1768846728.7568033
+  },
+  "normalize:sơn tùng mtp": {
+    "value": [],
+    "_created_at": 1769016672.3198345
+  },
+  "normalize:mỹ": {
+    "value": [
+      {
+        "qid": "Q836",
+        "label": "Myanmar",
+        "description": "country in Southeast Asia",
+        "score": 0
+      },
+      {
+        "qid": "Q833",
+        "label": "Malaysia",
+        "description": "country in Southeast Asia",
+        "score": 0
+      },
+      {
+        "qid": "Q130971",
+        "label": "Mycobacterium tuberculosis",
+        "description": "species of bacterium",
+        "score": 0
+      },
+      {
+        "qid": "Q9228",
+        "label": "Burmese",
+        "description": "Sino-Tibetan language of Myanmar",
+        "score": 0
+      },
+      {
+        "qid": "Q6946978",
+        "label": "Mycobacterium abscessus",
+        "description": "species of bacterium",
+        "score": 0
+      }
+    ],
+    "_created_at": 1769016673.2530198
+  },
+  "normalize:sơn tùng": {
+    "value": [
+      {
+        "qid": "Q10823423",
+        "label": "Sơn Tùng",
+        "description": "Vietnamese writer",
+        "score": 0
+      },
+      {
+        "qid": "Q17450386",
+        "label": "Sơn Tùng M-TP",
+        "description": "Vietnamese singer-songwriter, rapper, record producer and actor (born 1994)",
+        "score": 0
+      },
+      {
+        "qid": "Q102147560",
+        "label": "Son Tung Ha",
+        "description": "researcher",
+        "score": 0
+      },
+      {
+        "qid": "Q51701973",
+        "label": "Son Tung Ngo",
+        "description": "researcher",
+        "score": 0
+      },
+      {
+        "qid": "Q107301064",
+        "label": "Sơn Tùng M-TP's albums in chronological order",
+        "description": "Wikimedia albums discography",
+        "score": 0
+      }
+    ],
+    "_created_at": 1769016699.6279826
   }
 }
