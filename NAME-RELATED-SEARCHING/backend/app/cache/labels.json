@@ -1,10 +1,42 @@
 {
+  "Q317521": {
+    "value": "Elon Musk",
+    "_created_at": 1769707195.738659
+  },
+  "Q1329269": {
+    "value": "The Wharton School",
+    "_created_at": 1769707195.7386615
+  },
+  "Q22686": {
+    "value": "Donald Trump",
+    "_created_at": 1769707195.7386627
+  },
+  "Q5284": {
+    "value": "Bill Gates",
+    "_created_at": 1769707518.1566808
+  },
+  "Q463303": {
+    "value": "American Academy of Arts and Sciences",
+    "_created_at": 1769707518.156682
+  },
+  "Q76": {
+    "value": "Barack Obama",
+    "_created_at": 1769707518.1566825
+  },
   "Q19837": {
     "value": "Steve Jobs",
-    "_created_at": 1768847063.8026106
+    "_created_at": 1769708219.1357977
   },
-  "Q312": {
-    "value": "Apple Inc.",
-    "_created_at": 1768847063.802615
+  "Q1124": {
+    "value": "Bill Clinton",
+    "_created_at": 1769708454.6053607
+  },
+  "Q29552": {
+    "value": "Democratic Party",
+    "_created_at": 1769708604.0687554
+  },
+  "Q6279": {
+    "value": "Joe Biden",
+    "_created_at": 1769708604.0687594
   }
 }

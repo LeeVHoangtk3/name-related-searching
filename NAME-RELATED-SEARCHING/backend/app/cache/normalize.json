@@ -32,7 +32,7 @@
         "score": 0
       }
     ],
-    "_created_at": 1768844411.422344
+    "_created_at": 1769707178.128722
   },
   "normalize:donald trump": {
     "value": [
@@ -67,246 +67,77 @@
         "score": 0
       }
     ],
-    "_created_at": 1768844412.126698
+    "_created_at": 1769707179.2596567
   },
-  "normalize:hồ chí minh": {
+  "normalize:bill gates": {
     "value": [
       {
-        "qid": "Q1854",
-        "label": "Ho Chi Minh City",
-        "description": "municipality in Vietnam",
+        "qid": "Q5284",
+        "label": "Bill Gates",
+        "description": "American businessman, investor, and philanthropist (born 1955)",
         "score": 0
       },
       {
-        "qid": "Q36014",
-        "label": "Ho Chi Minh",
-        "description": "Vietnamese communist leader, president of North Vietnam from 1945 (1890–1969)",
+        "qid": "Q123411797",
+        "label": "Bill Gates",
+        "description": "English footballer (1944–2023)",
         "score": 0
       },
       {
-        "qid": "Q47512596",
-        "label": "Ho Chi-Minh",
-        "description": "painting by Boris Chaliapin",
+        "qid": "Q684014",
+        "label": "Bill Gates Sr.",
+        "description": "American attorney and philanthropist (1925–2020)",
         "score": 0
       },
       {
-        "qid": "Q5874021",
-        "label": "Hồ Chí Minh Prize",
-        "description": "honorary award given by the government of Vietnam",
+        "qid": "Q1181671",
+        "label": "Bill Gates",
+        "description": "Wikimedia disambiguation page",
         "score": 0
       },
       {
-        "qid": "Q47509634",
-        "label": "Ho Chi-Minh",
-        "description": "painting by Jim Sharpe",
+        "qid": "Q100794547",
+        "label": "Bill Gates",
+        "description": "college basketball player (1959–1959) Boston University",
         "score": 0
       }
     ],
-    "_created_at": 1768845488.1957545
+    "_created_at": 1769707502.7743926
   },
-  "normalize:võ nguyên giáp": {
+  "normalize:ba": {
     "value": [
       {
-        "qid": "Q179910",
-        "label": "Võ Nguyên Giáp",
-        "description": "Vietnamese general and communist politician (1911–2013)",
+        "qid": "Q225",
+        "label": "Bosnia and Herzegovina",
+        "description": "country in Southeast Europe",
         "score": 0
       },
       {
-        "qid": "Q47509617",
-        "label": "Vo Nguyen Giap",
-        "description": "painting by Hector Garrido",
+        "qid": "Q40430",
+        "label": "Bahia",
+        "description": "state in the Northeast Region of Brazil",
         "score": 0
       },
       {
-        "qid": "Q47509879",
-        "label": "Vo Nguyen Giap",
-        "description": "painting by Louis S. Glanzman",
+        "qid": "Q1765120",
+        "label": "Bachelor of Arts",
+        "description": "type of undergraduate qualification",
         "score": 0
       },
       {
-        "qid": "Q47511800",
-        "label": "Vo Nguyen Giap",
-        "description": "painting by David Stone Martin",
+        "qid": "Q217026",
+        "label": "leap year starting on Saturday and ending on Sunday",
+        "description": "type of year BA on a solar calendar according to its starting and ending days in the week",
         "score": 0
       },
       {
-        "qid": "Q2349684",
-        "label": "Hanoi Highway",
-        "description": "boulevard in Ho Chi Minh City, Vietnam",
+        "qid": "Q902",
+        "label": "Bangladesh",
+        "description": "country in South Asia",
         "score": 0
       }
     ],
-    "_created_at": 1768845489.1017087
-  },
-  "normalize:nguyễn ái quốc": {
-    "value": [
-      {
-        "qid": "Q36014",
-        "label": "Ho Chi Minh",
-        "description": "Vietnamese communist leader, president of North Vietnam from 1945 (1890–1969)",
-        "score": 0
-      },
-      {
-        "qid": "Q12901199",
-        "label": "Nguyễn Ái Quốc",
-        "description": "",
-        "score": 0
-      },
-      {
-        "qid": "Q136026380",
-        "label": "Nguyễn Ái Quốc – Hồ Chí Minh",
-        "description": "",
-        "score": 0
-      },
-      {
-        "qid": "Q117463274",
-        "label": "Escape from HK",
-        "description": "2003 Vietnamese film",
-        "score": 0
-      }
-    ],
-    "_created_at": 1768845525.632668
-  },
-  "normalize:steve jobs": {
-    "value": [
-      {
-        "qid": "Q19837",
-        "label": "Steve Jobs",
-        "description": "American entrepreneur; co-founder of Apple Inc. (1955–2011)",
-        "score": 0
-      },
-      {
-        "qid": "Q18754959",
-        "label": "Steve Jobs",
-        "description": "2015 film directed by Danny Boyle",
-        "score": 0
-      },
-      {
-        "qid": "Q109983309",
-        "label": "Steve Jobs",
-        "description": "person identified in the Museu da Pessoa collection",
-        "score": 0
-      },
-      {
-        "qid": "Q625645",
-        "label": "Steve Jobs",
-        "description": "2011 authorized biography by Walter Isaacson",
-        "score": 0
-      },
-      {
-        "qid": "Q28941414",
-        "label": "Steve Jobs",
-        "description": "2015 paperback edition published by Simon & Schuster",
-        "score": 0
-      }
-    ],
-    "_created_at": 1768846335.2939458
-  },
-  "normalize:apple": {
-    "value": [
-      {
-        "qid": "Q312",
-        "label": "Apple Inc.",
-        "description": "American multinational technology company based in Cupertino, California",
-        "score": 0
-      },
-      {
-        "qid": "Q213710",
-        "label": "Apple Records",
-        "description": "UK international record label; imprint of Apple Corps Ltd.",
-        "score": 0
-      },
-      {
-        "qid": "Q89",
-        "label": "apple",
-        "description": "fruit of the apple tree",
-        "score": 0
-      },
-      {
-        "qid": "Q20056642",
-        "label": "Apple Music",
-        "description": "Internet online music service by Apple",
-        "score": 0
-      },
-      {
-        "qid": "Q26944931",
-        "label": "Apple",
-        "description": "unisex given name",
-        "score": 0
-      }
-    ],
-    "_created_at": 1768846336.2697294
-  },
-  "normalize:android": {
-    "value": [
-      {
-        "qid": "Q94",
-        "label": "Android",
-        "description": "operating system created by Google for use in mobile devices",
-        "score": 0
-      },
-      {
-        "qid": "Q181787",
-        "label": "android",
-        "description": "robot resembling a human, or in other uses specifically a human",
-        "score": 0
-      },
-      {
-        "qid": "Q79576",
-        "label": "Google Play",
-        "description": "digital software distribution platform from Google",
-        "score": 0
-      },
-      {
-        "qid": "Q122312144",
-        "label": "Android",
-        "description": "2020 video game",
-        "score": 0
-      },
-      {
-        "qid": "Q85684089",
-        "label": "Android 11",
-        "description": "11th major release of the Android mobile operating system",
-        "score": 0
-      }
-    ],
-    "_created_at": 1768846434.992914
-  },
-  "normalize:iphone": {
-    "value": [
-      {
-        "qid": "Q2766",
-        "label": "iPhone",
-        "description": "line of smartphones developed and marketed by Apple Inc.",
-        "score": 0
-      },
-      {
-        "qid": "Q621427",
-        "label": "iPhone",
-        "description": "first smartphone of the iPhone line by Apple Inc.",
-        "score": 0
-      },
-      {
-        "qid": "Q48493",
-        "label": "iOS",
-        "description": "mobile operating system by Apple Inc.",
-        "score": 0
-      },
-      {
-        "qid": "Q26831164",
-        "label": "iPhone 7",
-        "description": "Tenth-generation smartphones by Apple Inc.",
-        "score": 0
-      },
-      {
-        "qid": "Q39510168",
-        "label": "iPhone X",
-        "description": "group of smartphone models produced by Apple Inc.",
-        "score": 0
-      }
-    ],
-    "_created_at": 1768846496.1206472
+    "_created_at": 1769707503.7487924
   },
   "normalize:barack obama": {
     "value": [
@@ -341,7 +172,77 @@
         "score": 0
       }
     ],
-    "_created_at": 1769622077.2208755
+    "_created_at": 1769707511.4198632
+  },
+  "normalize:steve jobs": {
+    "value": [
+      {
+        "qid": "Q19837",
+        "label": "Steve Jobs",
+        "description": "American entrepreneur; co-founder of Apple Inc. (1955–2011)",
+        "score": 0
+      },
+      {
+        "qid": "Q18754959",
+        "label": "Steve Jobs",
+        "description": "2015 film directed by Danny Boyle",
+        "score": 0
+      },
+      {
+        "qid": "Q109983309",
+        "label": "Steve Jobs",
+        "description": "person identified in the Museu da Pessoa collection",
+        "score": 0
+      },
+      {
+        "qid": "Q625645",
+        "label": "Steve Jobs",
+        "description": "2011 authorized biography by Walter Isaacson",
+        "score": 0
+      },
+      {
+        "qid": "Q28941414",
+        "label": "Steve Jobs",
+        "description": "2015 paperback edition published by Simon & Schuster",
+        "score": 0
+      }
+    ],
+    "_created_at": 1769708095.344959
+  },
+  "normalize:bil": {
+    "value": [
+      {
+        "qid": "Q18245781",
+        "label": "Bill",
+        "description": "male given name",
+        "score": 0
+      },
+      {
+        "qid": "Q16420918",
+        "label": "Bil",
+        "description": "male given name",
+        "score": 0
+      },
+      {
+        "qid": "Q19816507",
+        "label": "Billy",
+        "description": "male given name",
+        "score": 0
+      },
+      {
+        "qid": "Q37452353",
+        "label": "Bil",
+        "description": "family name",
+        "score": 0
+      },
+      {
+        "qid": "Q1124",
+        "label": "Bill Clinton",
+        "description": "President of the United States from 1993 to 2001 (born 1946)",
+        "score": 0
+      }
+    ],
+    "_created_at": 1769708438.1864195
   },
   "normalize:joe biden": {
     "value": [
@@ -376,150 +277,111 @@
         "score": 0
       }
     ],
-    "_created_at": 1769622078.1488414
+    "_created_at": 1769708597.7906632
   },
-  "normalize:michelle obama": {
+  "normalize:salah": {
     "value": [
       {
-        "qid": "Q13133",
-        "label": "Michelle Obama",
-        "description": "lawyer and former First Lady of the United States (2009-2017) President Barack Obama",
+        "qid": "Q19882606",
+        "label": "Salah",
+        "description": "male given name",
         "score": 0
       },
       {
-        "qid": "Q23663680",
-        "label": "Michelle Obama: A plea for education",
-        "description": "Elizabeth G. Anderson School",
+        "qid": "Q21484751",
+        "label": "Salah",
+        "description": "family name",
         "score": 0
       },
       {
-        "qid": "Q115059310",
-        "label": "Michelle Obama, FLOTUS",
-        "description": "2016 painted electrical box by Maddu Huacuja in Boston",
+        "qid": "Q111700208",
+        "label": "Salah",
+        "description": "unisex given name",
         "score": 0
       },
       {
-        "qid": "Q110575243",
-        "label": "The Michelle Obama Podcast",
-        "description": "podcast",
+        "qid": "Q234869",
+        "label": "salah",
+        "description": "daily obligatory prayers in Islam",
         "score": 0
       },
       {
-        "qid": "Q18021670",
-        "label": "Michelle Obama, Hillary Clinton present 2012 International Women of Courage Awards",
-        "description": "Wikinews article",
+        "qid": "Q42242293",
+        "label": "Salaheddin M. Mahmud",
+        "description": "Turkish researcher",
         "score": 0
       }
     ],
-    "_created_at": 1768846709.277133
+    "_created_at": 1769708718.1566784
   },
-  "normalize:tim cook": {
+  "normalize:van dijk": {
     "value": [
       {
-        "qid": "Q265852",
-        "label": "Tim Cook",
-        "description": "American business executive",
+        "qid": "Q66685841",
+        "label": "van Dijk",
+        "description": "family name",
         "score": 0
       },
       {
-        "qid": "Q108053263",
-        "label": "Tim Cook",
-        "description": "football player (born 1994)",
+        "qid": "Q150679",
+        "label": "Anthony van Dyck",
+        "description": "Flemish Baroque artist (1599–1641)",
         "score": 0
       },
       {
-        "qid": "Q112552173",
-        "label": "Tim Cook",
-        "description": "anesthesiologist",
+        "qid": "Q108911182",
+        "label": "van Dijk",
+        "description": "human",
         "score": 0
       },
       {
-        "qid": "Q7803348",
-        "label": "Tim Cook",
-        "description": "Canadian military historian and author (1971-2025)",
+        "qid": "Q136790026",
+        "label": "Van Dijk",
+        "description": "2025 song by La Fouine",
         "score": 0
       },
       {
-        "qid": "Q56965559",
-        "label": "Timothy W Cook",
-        "description": "researcher, engineer",
+        "qid": "Q21489026",
+        "label": "Van Dijk",
+        "description": "family name",
         "score": 0
       }
     ],
-    "_created_at": 1768846728.7568033
+    "_created_at": 1769708719.1284506
   },
-  "normalize:sơn tùng mtp": {
-    "value": [],
-    "_created_at": 1769016672.3198345
-  },
-  "normalize:mỹ": {
+  "normalize:ronaldo": {
     "value": [
       {
-        "qid": "Q836",
-        "label": "Myanmar",
-        "description": "country in Southeast Asia",
+        "qid": "Q19819804",
+        "label": "Ronaldo",
+        "description": "male given name",
         "score": 0
       },
       {
-        "qid": "Q833",
-        "label": "Malaysia",
-        "description": "country in Southeast Asia",
+        "qid": "Q529207",
+        "label": "Ronaldo",
+        "description": "Brazilian association football player (born 1976)",
         "score": 0
       },
       {
-        "qid": "Q130971",
-        "label": "Mycobacterium tuberculosis",
-        "description": "species of bacterium",
+        "qid": "Q11571",
+        "label": "Cristiano Ronaldo",
+        "description": "Portuguese association football player (born 1985)",
         "score": 0
       },
       {
-        "qid": "Q9228",
-        "label": "Burmese",
-        "description": "Sino-Tibetan language of Myanmar",
+        "qid": "Q21452687",
+        "label": "Ronaldo",
+        "description": "family name",
         "score": 0
       },
       {
-        "qid": "Q6946978",
-        "label": "Mycobacterium abscessus",
-        "description": "species of bacterium",
+        "qid": "Q109781615",
+        "label": "Ronaldo",
+        "description": "person identified in the Museu da Pessoa collection",
         "score": 0
       }
     ],
-    "_created_at": 1769016673.2530198
-  },
-  "normalize:sơn tùng": {
-    "value": [
-      {
-        "qid": "Q10823423",
-        "label": "Sơn Tùng",
-        "description": "Vietnamese writer",
-        "score": 0
-      },
-      {
-        "qid": "Q17450386",
-        "label": "Sơn Tùng M-TP",
-        "description": "Vietnamese singer-songwriter, rapper, record producer and actor (born 1994)",
-        "score": 0
-      },
-      {
-        "qid": "Q102147560",
-        "label": "Son Tung Ha",
-        "description": "researcher",
-        "score": 0
-      },
-      {
-        "qid": "Q51701973",
-        "label": "Son Tung Ngo",
-        "description": "researcher",
-        "score": 0
-      },
-      {
-        "qid": "Q107301064",
-        "label": "Sơn Tùng M-TP's albums in chronological order",
-        "description": "Wikimedia albums discography",
-        "score": 0
-      }
-    ],
-    "_created_at": 1769016699.6279826
+    "_created_at": 1769709577.9843917
   }
 }

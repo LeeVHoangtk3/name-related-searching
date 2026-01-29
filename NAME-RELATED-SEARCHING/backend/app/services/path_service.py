@@ -96,7 +96,7 @@ def resolve_labels(qids: List[str]) -> List[Dict[str, str]]:
 def find_path_cached(
     start_qid: str,
     target_qid: str,
-    max_depth: int = 3,
+    max_depth: int = 4,
 ) -> Optional[List[Dict[str, str]]]:
 
     cache_key = f"path:{start_qid}:{target_qid}"
@@ -120,6 +120,8 @@ def find_path_cached(
     if path_qids:
         set_cache("paths.json", cache_key, path_qids)
         return resolve_labels(path_qids)
+    else: 
+        print(f"[PATH] No path found from {start_qid} to {target_qid}")
         
     return None
 
@@ -149,10 +151,8 @@ def find_path_bidirectional(
     parent_start = {start_qid: None}
     parent_target = {target_qid: None}
 
-    depth = 0
 
-    while q_start and q_target and depth < max_depth:
-        depth += 1
+    while q_start and q_target:
 
         # Expand the smaller frontier
         if len(q_start) <= len(q_target):
@@ -185,6 +185,9 @@ def _expand(queue, visited_this, visited_other, parent):
         current = queue.popleft()
 
         neighbors = get_neighbors(current)
+        print(f"[BFS] Visiting {current}")
+        print(f"[BFS] Neighbors count: {len(neighbors)}")
+        print(f"[BFS] Sample neighbors: {neighbors[:5]}")
         for nb in neighbors:
             if nb in visited_this:
                 continue
@@ -192,6 +195,7 @@ def _expand(queue, visited_this, visited_other, parent):
             parent[nb] = current
 
             if nb in visited_other:
+                print(f"[BFS] 🤝 Meet at {nb}")
                 return nb
 
             visited_this.add(nb)
