@@ -1,167 +1,38 @@
 {
-  "entity_type:Q317521": {
+  "entity_type:Q1354960": {
     "value": [
       "Q5"
     ],
-    "_created_at": 1769707180.0215995
+    "_created_at": 1769798439.8172176
   },
-  "entity_type:Q22686": {
+  "entity_type:Q90951128": {
     "value": [
       "Q5"
     ],
-    "_created_at": 1769707189.300405
+    "_created_at": 1769798442.8345845
   },
-  "entity_type:Q5284": {
+  "entity_type:Q20423055": {
     "value": [
       "Q5"
     ],
-    "_created_at": 1769707505.356701
+    "_created_at": 1769798444.5774007
   },
-  "entity_type:Q225": {
-    "value": [
-      "Q6256",
-      "Q1520223",
-      "Q3624078",
-      "Q51576574"
-    ],
-    "_created_at": 1769707511.3330336
-  },
-  "entity_type:Q76": {
+  "entity_type:Q43975293": {
     "value": [
       "Q5"
     ],
-    "_created_at": 1769707512.7446287
+    "_created_at": 1769798446.2169037
   },
-  "entity_type:Q40430": {
-    "value": [
-      "Q485258"
-    ],
-    "_created_at": 1769707520.705903
-  },
-  "entity_type:Q1765120": {
-    "value": [
-      "Q189533",
-      "Q117146794"
-    ],
-    "_created_at": 1769707525.1124382
-  },
-  "entity_type:Q217026": {
-    "value": [
-      "Q56290623"
-    ],
-    "_created_at": 1769707530.5778916
-  },
-  "entity_type:Q902": {
-    "value": [
-      "Q6256",
-      "Q3624078"
-    ],
-    "_created_at": 1769707534.0616682
-  },
-  "entity_type:Q123411797": {
+  "entity_type:Q22109496": {
     "value": [
       "Q5"
     ],
-    "_created_at": 1769707538.8766139
+    "_created_at": 1769798447.794874
   },
-  "entity_type:Q684014": {
+  "entity_type:Q101002080": {
     "value": [
-      "Q5"
+      "Q10514115"
     ],
-    "_created_at": 1769707544.1079528
-  },
-  "entity_type:Q1181671": {
-    "value": [
-      "Q22808320"
-    ],
-    "_created_at": 1769707561.1641855
-  },
-  "entity_type:Q100794547": {
-    "value": [
-      "Q5"
-    ],
-    "_created_at": 1769707564.6360455
-  },
-  "entity_type:Q49110": {
-    "value": [
-      "Q3918",
-      "Q23002054",
-      "Q45400320"
-    ],
-    "_created_at": 1769707569.9009218
-  },
-  "entity_type:Q19837": {
-    "value": [
-      "Q5"
-    ],
-    "_created_at": 1769708096.42457
-  },
-  "entity_type:Q18245781": {
-    "value": [
-      "Q1130279",
-      "Q12308941"
-    ],
-    "_created_at": 1769708438.999561
-  },
-  "entity_type:Q16420918": {
-    "value": [
-      "Q12308941"
-    ],
-    "_created_at": 1769708444.36072
-  },
-  "entity_type:Q19816507": {
-    "value": [
-      "Q12308941"
-    ],
-    "_created_at": 1769708445.6400719
-  },
-  "entity_type:Q37452353": {
-    "value": [
-      "Q101352"
-    ],
-    "_created_at": 1769708446.5203497
-  },
-  "entity_type:Q1124": {
-    "value": [
-      "Q5"
-    ],
-    "_created_at": 1769708449.5725126
-  },
-  "entity_type:Q6279": {
-    "value": [
-      "Q5"
-    ],
-    "_created_at": 1769708598.6495676
-  },
-  "entity_type:Q19882606": {
-    "value": [
-      "Q12308941"
-    ],
-    "_created_at": 1769708720.0482597
-  },
-  "entity_type:Q21484751": {
-    "value": [
-      "Q101352"
-    ],
-    "_created_at": 1769708720.9015114
-  },
-  "entity_type:Q111700208": {
-    "value": [
-      "Q202444"
-    ],
-    "_created_at": 1769708722.0902739
-  },
-  "entity_type:Q234869": {
-    "value": [
-      "Q40953",
-      "Q1231595"
-    ],
-    "_created_at": 1769708726.0297754
-  },
-  "entity_type:Q42242293": {
-    "value": [
-      "Q5"
-    ],
-    "_created_at": 1769708731.4658847
+    "_created_at": 1769878757.6460762
   }
 }

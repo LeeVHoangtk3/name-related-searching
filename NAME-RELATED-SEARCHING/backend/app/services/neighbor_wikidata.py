@@ -2,6 +2,7 @@ import requests
 from typing import List
 
 from app.services.file_cache import get_cache, set_cache
+from app.services.graph_config import ALLOWED_HUB_CLASSES
 
 SPARQL_ENDPOINT = "https://query.wikidata.org/sparql"
 
@@ -19,40 +20,33 @@ def get_neighbors(qid: str) -> List[str]:
         return cached
 
     types = get_entity_type(qid)
-
     is_person = "Q5" in types
-    is_org = (
-        "Q43229" in types
-        or "Q783794" in types
-        or any(is_subclass_of(t, "Q43229") for t in types)
-    )
-    is_position = (
-        "Q4164871" in types
-        or any(is_subclass_of(t, "Q4164871") for t in types)
-    )
+
+    hub_values = " ".join(f"wd:{qid}" for qid in ALLOWED_HUB_CLASSES)
 
     if is_person:
-        # Person → Organization / Position (HUB)
+        # Person → HUB
         query = f"""
         SELECT DISTINCT ?neighbor WHERE {{
             wd:{qid}
-                wdt:P108  |   # employer
-                wdt:P463  |   # member of
-                wdt:P102  |   # political party
-                wdt:P69   |   # educated at
-                wdt:P39       # position held
+                wdt:P108 |
+                wdt:P463 |
+                wdt:P102 |
+                wdt:P69  |
+                wdt:P39
             ?neighbor .
 
             ?neighbor wdt:P31 ?type .
             FILTER EXISTS {{
-                ?type wdt:P279* wd:Q43229 .
+                VALUES ?hub {{ {hub_values} }}
+                ?type wdt:P279* ?hub .
             }}
         }}
         LIMIT 50
         """
 
-    elif is_org or is_position:
-        # Organization / Position → Person
+    else:
+        # HUB → Person
         query = f"""
         SELECT DISTINCT ?neighbor WHERE {{
             ?neighbor
@@ -66,9 +60,6 @@ def get_neighbors(qid: str) -> List[str]:
         }}
         LIMIT 50
         """
-
-    else:
-        return []
 
     res = requests.post(
         SPARQL_ENDPOINT,
@@ -157,4 +148,3 @@ def is_subclass_of(qid: str, target_qid: str) -> bool:
 
     set_cache("subclass.json", cache_key, result)
     return result
-

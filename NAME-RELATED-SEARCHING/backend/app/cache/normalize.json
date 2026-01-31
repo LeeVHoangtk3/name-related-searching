@@ -1,387 +1,48 @@
 {
-  "normalize:elon musk": {
+  "normalize:mohamed salah": {
     "value": [
       {
-        "qid": "Q317521",
-        "label": "Elon Musk",
-        "description": "businessman and entrepreneur (born 1971)",
+        "qid": "Q1354960",
+        "label": "Mohamed Salah",
+        "description": "Egyptian association football player",
         "score": 0
       },
       {
-        "qid": "Q121968158",
-        "label": "Elon Musk: Tesla, SpaceX a hledání fantastické budoucnosti",
-        "description": "book edition published in 2015",
+        "qid": "Q90951128",
+        "label": "Mohamed Salah",
+        "description": "researcher (ORCID 0000-0002-9535-6741)",
         "score": 0
       },
       {
-        "qid": "Q111725317",
-        "label": "acquisition of Twitter by Elon Musk",
-        "description": "business acquisition in 2022",
+        "qid": "Q20423055",
+        "label": "Mohammed Salah",
+        "description": "footballer; football manager",
         "score": 0
       },
       {
-        "qid": "Q122380405",
-        "label": "Elon Musk",
-        "description": "2023 authorized biography by Walter Isaacson",
+        "qid": "Q43975293",
+        "label": "Mohamed Salah",
+        "description": "researcher (ORCID 0000-0001-9546-9490)",
         "score": 0
       },
       {
-        "qid": "Q123134390",
-        "label": "Elon Musk",
-        "description": "2023 single by Shallipopi",
+        "qid": "Q22109496",
+        "label": "Mohamed Salah",
+        "description": "Egyptian entomologist",
         "score": 0
       }
     ],
-    "_created_at": 1769707178.128722
+    "_created_at": 1769798438.4308167
   },
-  "normalize:donald trump": {
+  "normalize:virgil van dijk": {
     "value": [
       {
-        "qid": "Q22686",
-        "label": "Donald Trump",
-        "description": "President of the United States (2017–2021, 2025–present)",
-        "score": 0
-      },
-      {
-        "qid": "Q3713655",
-        "label": "Donald Trump Jr.",
-        "description": "American businessman and reality television personality (born 1977)",
-        "score": 0
-      },
-      {
-        "qid": "Q27947481",
-        "label": "Donald Trump",
-        "description": "American physician",
-        "score": 0
-      },
-      {
-        "qid": "Q23000825",
-        "label": "Donald Trump III",
-        "description": "son of Donald Trump Jr. (born 2009)",
-        "score": 0
-      },
-      {
-        "qid": "Q699872",
-        "label": "2016 United States presidential election",
-        "description": "58th quadrennial U.S. presidential election",
+        "qid": "Q133903",
+        "label": "Virgil van Dijk",
+        "description": "Dutch association football player (born 1991)",
         "score": 0
       }
     ],
-    "_created_at": 1769707179.2596567
-  },
-  "normalize:bill gates": {
-    "value": [
-      {
-        "qid": "Q5284",
-        "label": "Bill Gates",
-        "description": "American businessman, investor, and philanthropist (born 1955)",
-        "score": 0
-      },
-      {
-        "qid": "Q123411797",
-        "label": "Bill Gates",
-        "description": "English footballer (1944–2023)",
-        "score": 0
-      },
-      {
-        "qid": "Q684014",
-        "label": "Bill Gates Sr.",
-        "description": "American attorney and philanthropist (1925–2020)",
-        "score": 0
-      },
-      {
-        "qid": "Q1181671",
-        "label": "Bill Gates",
-        "description": "Wikimedia disambiguation page",
-        "score": 0
-      },
-      {
-        "qid": "Q100794547",
-        "label": "Bill Gates",
-        "description": "college basketball player (1959–1959) Boston University",
-        "score": 0
-      }
-    ],
-    "_created_at": 1769707502.7743926
-  },
-  "normalize:ba": {
-    "value": [
-      {
-        "qid": "Q225",
-        "label": "Bosnia and Herzegovina",
-        "description": "country in Southeast Europe",
-        "score": 0
-      },
-      {
-        "qid": "Q40430",
-        "label": "Bahia",
-        "description": "state in the Northeast Region of Brazil",
-        "score": 0
-      },
-      {
-        "qid": "Q1765120",
-        "label": "Bachelor of Arts",
-        "description": "type of undergraduate qualification",
-        "score": 0
-      },
-      {
-        "qid": "Q217026",
-        "label": "leap year starting on Saturday and ending on Sunday",
-        "description": "type of year BA on a solar calendar according to its starting and ending days in the week",
-        "score": 0
-      },
-      {
-        "qid": "Q902",
-        "label": "Bangladesh",
-        "description": "country in South Asia",
-        "score": 0
-      }
-    ],
-    "_created_at": 1769707503.7487924
-  },
-  "normalize:barack obama": {
-    "value": [
-      {
-        "qid": "Q76",
-        "label": "Barack Obama",
-        "description": "president of the United States from 2009 to 2017",
-        "score": 0
-      },
-      {
-        "qid": "Q649593",
-        "label": "Barack Obama Sr.",
-        "description": "economist and father of Barack Obama Jr. (1934–1982)",
-        "score": 0
-      },
-      {
-        "qid": "Q59661289",
-        "label": "Barack Obama Presidential Library",
-        "description": "reference unit of the National Archives and Records Administration",
-        "score": 0
-      },
-      {
-        "qid": "Q47513588",
-        "label": "Barack Obama",
-        "description": "painting by Michael A. Glier",
-        "score": 0
-      },
-      {
-        "qid": "Q1379733",
-        "label": "presidency of Barack Obama",
-        "description": "44th presidential administration and cabinet of the USA (2009-2017)",
-        "score": 0
-      }
-    ],
-    "_created_at": 1769707511.4198632
-  },
-  "normalize:steve jobs": {
-    "value": [
-      {
-        "qid": "Q19837",
-        "label": "Steve Jobs",
-        "description": "American entrepreneur; co-founder of Apple Inc. (1955–2011)",
-        "score": 0
-      },
-      {
-        "qid": "Q18754959",
-        "label": "Steve Jobs",
-        "description": "2015 film directed by Danny Boyle",
-        "score": 0
-      },
-      {
-        "qid": "Q109983309",
-        "label": "Steve Jobs",
-        "description": "person identified in the Museu da Pessoa collection",
-        "score": 0
-      },
-      {
-        "qid": "Q625645",
-        "label": "Steve Jobs",
-        "description": "2011 authorized biography by Walter Isaacson",
-        "score": 0
-      },
-      {
-        "qid": "Q28941414",
-        "label": "Steve Jobs",
-        "description": "2015 paperback edition published by Simon & Schuster",
-        "score": 0
-      }
-    ],
-    "_created_at": 1769708095.344959
-  },
-  "normalize:bil": {
-    "value": [
-      {
-        "qid": "Q18245781",
-        "label": "Bill",
-        "description": "male given name",
-        "score": 0
-      },
-      {
-        "qid": "Q16420918",
-        "label": "Bil",
-        "description": "male given name",
-        "score": 0
-      },
-      {
-        "qid": "Q19816507",
-        "label": "Billy",
-        "description": "male given name",
-        "score": 0
-      },
-      {
-        "qid": "Q37452353",
-        "label": "Bil",
-        "description": "family name",
-        "score": 0
-      },
-      {
-        "qid": "Q1124",
-        "label": "Bill Clinton",
-        "description": "President of the United States from 1993 to 2001 (born 1946)",
-        "score": 0
-      }
-    ],
-    "_created_at": 1769708438.1864195
-  },
-  "normalize:joe biden": {
-    "value": [
-      {
-        "qid": "Q6279",
-        "label": "Joe Biden",
-        "description": "46th President of the United States (2021–2025)",
-        "score": 0
-      },
-      {
-        "qid": "Q65053339",
-        "label": "Joe Biden",
-        "description": "fictional parody character from The Onion loosely based on the real Joe Biden",
-        "score": 0
-      },
-      {
-        "qid": "Q97738250",
-        "label": "inauguration of Joe Biden",
-        "description": "59th United States presidential inauguration",
-        "score": 0
-      },
-      {
-        "qid": "Q104922747",
-        "label": "list of executive actions by Joe Biden",
-        "description": "Wikimedia list article",
-        "score": 0
-      },
-      {
-        "qid": "Q54495162",
-        "label": "family of Joe Biden",
-        "description": "First Family of the United States from 2021 to 2025",
-        "score": 0
-      }
-    ],
-    "_created_at": 1769708597.7906632
-  },
-  "normalize:salah": {
-    "value": [
-      {
-        "qid": "Q19882606",
-        "label": "Salah",
-        "description": "male given name",
-        "score": 0
-      },
-      {
-        "qid": "Q21484751",
-        "label": "Salah",
-        "description": "family name",
-        "score": 0
-      },
-      {
-        "qid": "Q111700208",
-        "label": "Salah",
-        "description": "unisex given name",
-        "score": 0
-      },
-      {
-        "qid": "Q234869",
-        "label": "salah",
-        "description": "daily obligatory prayers in Islam",
-        "score": 0
-      },
-      {
-        "qid": "Q42242293",
-        "label": "Salaheddin M. Mahmud",
-        "description": "Turkish researcher",
-        "score": 0
-      }
-    ],
-    "_created_at": 1769708718.1566784
-  },
-  "normalize:van dijk": {
-    "value": [
-      {
-        "qid": "Q66685841",
-        "label": "van Dijk",
-        "description": "family name",
-        "score": 0
-      },
-      {
-        "qid": "Q150679",
-        "label": "Anthony van Dyck",
-        "description": "Flemish Baroque artist (1599–1641)",
-        "score": 0
-      },
-      {
-        "qid": "Q108911182",
-        "label": "van Dijk",
-        "description": "human",
-        "score": 0
-      },
-      {
-        "qid": "Q136790026",
-        "label": "Van Dijk",
-        "description": "2025 song by La Fouine",
-        "score": 0
-      },
-      {
-        "qid": "Q21489026",
-        "label": "Van Dijk",
-        "description": "family name",
-        "score": 0
-      }
-    ],
-    "_created_at": 1769708719.1284506
-  },
-  "normalize:ronaldo": {
-    "value": [
-      {
-        "qid": "Q19819804",
-        "label": "Ronaldo",
-        "description": "male given name",
-        "score": 0
-      },
-      {
-        "qid": "Q529207",
-        "label": "Ronaldo",
-        "description": "Brazilian association football player (born 1976)",
-        "score": 0
-      },
-      {
-        "qid": "Q11571",
-        "label": "Cristiano Ronaldo",
-        "description": "Portuguese association football player (born 1985)",
-        "score": 0
-      },
-      {
-        "qid": "Q21452687",
-        "label": "Ronaldo",
-        "description": "family name",
-        "score": 0
-      },
-      {
-        "qid": "Q109781615",
-        "label": "Ronaldo",
-        "description": "person identified in the Museu da Pessoa collection",
-        "score": 0
-      }
-    ],
-    "_created_at": 1769709577.9843917
+    "_created_at": 1769798439.1346998
   }
 }

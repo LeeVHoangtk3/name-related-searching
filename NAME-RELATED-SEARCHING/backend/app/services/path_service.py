@@ -6,7 +6,8 @@ import time
 from app.services.bfs_service import find_path
 from app.services.neighbor_wikidata import get_neighbors
 from app.services.file_cache import get_cache, set_cache, load_cache, save_cache
-
+from app.services.neighbor_wikidata import get_entity_type
+from app.services.graph_config import ALLOWED_HUB_CLASSES
 
 def resolve_labels(qids: List[str]) -> List[Dict[str, str]]:
     """
@@ -144,8 +145,8 @@ def find_path_bidirectional(
     q_target = deque([target_qid])
 
     # Visited sets (store QIDs)
-    visited_start = {start_qid}
-    visited_target = {target_qid}
+    visited_start = {start_qid: "person"}
+    visited_target = {target_qid: "person"} 
 
     # Parent maps
     parent_start = {start_qid: None}
@@ -179,29 +180,47 @@ def find_path_bidirectional(
 
 def _expand(queue, visited_this, visited_other, parent):
     """
-    Expand one BFS layer
+    Expand one BFS layer with graph control:
+    - Person → Hub → Person
+    - ❌ Hub → Hub (blocked)
     """
     for _ in range(len(queue)):
         current = queue.popleft()
+        current_kind = visited_this[current]   # "person" | "hub"
 
         neighbors = get_neighbors(current)
-        print(f"[BFS] Visiting {current}")
-        print(f"[BFS] Neighbors count: {len(neighbors)}")
-        print(f"[BFS] Sample neighbors: {neighbors[:5]}")
+
         for nb in neighbors:
             if nb in visited_this:
                 continue
 
-            parent[nb] = current
+            # xác định loại của neighbor
+            types = get_entity_type(nb)
+            nb_kind = (
+                "person" if "Q5" in types
+                else "hub" if any(t in ALLOWED_HUB_CLASSES for t in types)
+                else None
+            )
 
+            # bỏ qua node không hợp lệ
+            if nb_kind is None:
+                continue
+
+            # 🚫 chặn HUB → HUB
+            if current_kind == "hub" and nb_kind == "hub":
+                continue
+
+            parent[nb] = current
+            visited_this[nb] = nb_kind
+
+            # 🤝 gặp nhau
             if nb in visited_other:
-                print(f"[BFS] 🤝 Meet at {nb}")
                 return nb
 
-            visited_this.add(nb)
             queue.append(nb)
 
     return None
+
 
 
 def _build_path(meet, parent_start, parent_target):
