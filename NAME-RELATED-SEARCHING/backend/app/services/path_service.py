@@ -4,9 +4,8 @@ import requests
 import time
 
 from app.services.bfs_service import find_path
-from app.services.neighbor_wikidata import get_neighbors
+from app.services.neighbor_wikidata import get_neighbors, get_entity_type
 from app.services.file_cache import get_cache, set_cache, load_cache, save_cache
-from app.services.neighbor_wikidata import get_entity_type
 from app.services.graph_config import ALLOWED_HUB_CLASSES
 
 def resolve_labels(qids: List[str]) -> List[Dict[str, str]]:
@@ -140,9 +139,9 @@ def find_path_bidirectional(
     if start_qid == target_qid:
         return resolve_labels([start_qid])
 
-    # Queues
-    q_start = deque([start_qid])
-    q_target = deque([target_qid])
+    # Queues store (qid, depth)
+    q_start = deque([(start_qid, 0)])
+    q_target = deque([(target_qid, 0)])
 
     # Visited sets (store QIDs)
     visited_start = {start_qid: "person"}
@@ -152,16 +151,21 @@ def find_path_bidirectional(
     parent_start = {start_qid: None}
     parent_target = {target_qid: None}
 
+    target_hubs = get_target_hubs(target_qid)
+
 
     while q_start and q_target:
 
-        # Expand the smaller frontier
-        if len(q_start) <= len(q_target):
+        # ⭐ luôn mở frontier nông hơn
+        # so sánh length depth của 2 queue
+        if q_start[0][1] <= q_target[0][1]:
             meet = _expand(
                 q_start,
                 visited_start,
                 visited_target,
                 parent_start,
+                target_hubs,
+                max_depth
             )
         else:
             meet = _expand(
@@ -169,7 +173,10 @@ def find_path_bidirectional(
                 visited_target,
                 visited_start,
                 parent_target,
+                None,          # ❗ không heuristic phía target
+                max_depth
             )
+
 
         if meet:
             path_qids = _build_path(meet, parent_start, parent_target)
@@ -178,48 +185,55 @@ def find_path_bidirectional(
     return None
 
 
-def _expand(queue, visited_this, visited_other, parent):
+def _expand(queue, visited_this, visited_other, parent, target_hubs, max_depth):
     """
-    Expand one BFS layer with graph control:
-    - Person → Hub → Person
-    - ❌ Hub → Hub (blocked)
+    Expand one BFS layer with depth limit.
     """
-    for _ in range(len(queue)):
-        current = queue.popleft()
-        current_kind = visited_this[current]   # "person" | "hub"
 
+    for _ in range(len(queue)):
+        current, depth = queue.popleft()
+
+        if depth >= max_depth:
+            continue
+
+        current_kind = visited_this[current]
         neighbors = get_neighbors(current)
+
+        priority = deque()
+        normal = deque()
 
         for nb in neighbors:
             if nb in visited_this:
                 continue
 
-            # xác định loại của neighbor
             types = get_entity_type(nb)
-            nb_kind = (
-                "person" if "Q5" in types
-                else "hub" if any(t in ALLOWED_HUB_CLASSES for t in types)
-                else None
-            )
 
-            # bỏ qua node không hợp lệ
-            if nb_kind is None:
+            if "Q5" in types:
+                nb_kind = "person"
+            elif any(t in ALLOWED_HUB_CLASSES for t in types):
+                nb_kind = "hub"
+            else:
                 continue
 
-            # 🚫 chặn HUB → HUB
             if current_kind == "hub" and nb_kind == "hub":
                 continue
 
             parent[nb] = current
             visited_this[nb] = nb_kind
 
-            # 🤝 gặp nhau
             if nb in visited_other:
                 return nb
 
-            queue.append(nb)
+            if target_hubs and current_kind == "hub" and nb in target_hubs:
+                priority.appendleft((nb, depth + 1))
+            else:
+                normal.append((nb, depth + 1))
+
+        queue.extend(priority)
+        queue.extend(normal)
 
     return None
+
 
 
 
@@ -242,3 +256,20 @@ def _build_path(meet, parent_start, parent_target):
         cur = parent_target.get(cur)
 
     return path_start + path_target
+
+
+
+def get_target_hubs(target_qid: str) -> set[str]:
+    """
+    Lấy tập hub (organization / club / party / position)
+    mà target liên quan tới.
+    """
+    hubs = set()
+    neighbors = get_neighbors(target_qid)
+
+    for nb in neighbors:
+        types = get_entity_type(nb)
+        if any(t in ALLOWED_HUB_CLASSES for t in types):
+            hubs.add(nb)
+
+    return hubs
