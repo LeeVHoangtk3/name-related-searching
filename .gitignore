@@ -27,6 +27,11 @@ coverage/
 *.pfx
 *.cer
 *.der
-docs/\n# Virtual environments\nvenv/\n.venv/\nNAME-RELATED-SEARCHING/backend/venv/
+docs/
+
+# Virtual environments
+venv/
+.venv/
+NAME-RELATED-SEARCHING/backend/venv/
 NAME-RELATED-SEARCHING/backend/.venv/
 NAME-RELATED-SEARCHING/backend/env/
