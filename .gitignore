@@ -1,37 +1,80 @@
+# IDEs and Editors
 .gitnexus
 .claude/
-AGENTS.md
-CLAUDE.md
 .superpowers/
 .vscode/
 .idea/
-*.log
-*.tmp
-*.bak
 *.swp
 *.swo
-*.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build and Dist
 node_modules/
 dist/
+dist-ssr/
 build/
 coverage/
+*.tmp
+*.bak
+
+# Environment files
 .env
 .env.local
 .env.*.local
 *.env
 *.env.*
 !.env.example
+
+# Certificates and keys
 *.pem
 *.key
 *.crt
 *.pfx
 *.cer
 *.der
-docs/
 
-# Virtual environments
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
 venv/
 .venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+.pytest_cache/
 NAME-RELATED-SEARCHING/backend/venv/
 NAME-RELATED-SEARCHING/backend/.venv/
 NAME-RELATED-SEARCHING/backend/env/
+
+# Documentation (Optional: unignore if you want to commit specs/plans)
+# docs/
+AGENTS.md
+CLAUDE.md
+__pycache__/
