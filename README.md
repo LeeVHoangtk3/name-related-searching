@@ -18,6 +18,12 @@ WikiBFS là một ứng dụng web giúp tìm kiếm và hiển thị đường 
 Yêu cầu Python 3.9+
 ```bash
 cd NAME-RELATED-SEARCHING/backend
+# Tạo và kích hoạt môi trường ảo
+python3 -m venv venv
+source venv/bin/activate  # Trên Linux/macOS
+# venv\Scripts\activate  # Trên Windows
+
+# Cài đặt dependencies
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
