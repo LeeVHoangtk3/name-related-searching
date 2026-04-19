@@ -5,7 +5,7 @@ import ConnectionGraph from './components/Graph';
 import './App.css';
 
 // API URL cho backend FastAPI
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
 function App() {
   const [startNode, setStartNode] = useState('');
