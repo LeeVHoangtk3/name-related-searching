@@ -1,0 +1,262 @@
+:root {
+  --bg-dark: #121212;
+  --bg-card: #1e1e1e;
+  --bg-input: #2c2c2c;
+  --primary: #bb86fc;
+  --secondary: #03dac6;
+  --text-main: #e0e0e0;
+  --text-dim: #aaa;
+  --border: #333;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-main);
+}
+
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* Sidebar Styling */
+.sidebar {
+  width: 320px;
+  background-color: var(--bg-card);
+  border-right: 1px solid var(--border);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 4px 0 10px rgba(0,0,0,0.3);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.logo h1 {
+  font-size: 1.5rem;
+  letter-spacing: -1px;
+}
+
+.section-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 20px;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.input-group {
+  margin-bottom: 16px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.input-group input {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  color: white;
+  padding: 12px;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+  border-color: var(--primary);
+}
+
+.search-button {
+  width: 100%;
+  background: var(--primary);
+  color: #000;
+  border: none;
+  padding: 14px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: opacity 0.2s;
+  margin-top: 8px;
+}
+
+.search-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.error-message {
+  margin-top: 16px;
+  background: rgba(207, 102, 121, 0.1);
+  color: #cf6679;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  border: 1px solid rgba(207, 102, 121, 0.2);
+}
+
+.history-section {
+  margin-top: 40px;
+  flex: 1;
+}
+
+.history-list {
+  list-style: none;
+}
+
+.history-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  background: var(--secondary);
+  border-radius: 50%;
+}
+
+.empty-text {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+/* Main Content Styling */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-dark);
+}
+
+.main-header {
+  height: 80px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+
+.header-info h2 {
+  font-size: 1.1rem;
+}
+
+.stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+}
+
+.stats span {
+  font-size: 0.75rem;
+  background: var(--border);
+  padding: 2px 8px;
+  border-radius: 4px;
+  color: var(--text-dim);
+}
+
+.info-icon {
+  color: var(--text-dim);
+  cursor: pointer;
+}
+
+.graph-wrapper {
+  flex: 1;
+  background: radial-gradient(circle at center, #1e1e1e 0%, #121212 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.empty-graph {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.graph-placeholder {
+  width: 160px;
+  height: 160px;
+  border: 3px dashed #333;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.empty-graph p {
+  color: #555;
+  font-weight: 500;
+}
+
+.path-display {
+  padding: 24px 32px;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+}
+
+.path-display h3 {
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+  color: var(--primary);
+}
+
+.path-sequence {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.path-node {
+  background: var(--bg-input);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.path-arrow {
+  color: var(--secondary);
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
