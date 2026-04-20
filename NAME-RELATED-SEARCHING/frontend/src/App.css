@@ -4,8 +4,8 @@
   --bg-input: #2c2c2c;
   --primary: #bb86fc;
   --secondary: #03dac6;
-  --text-main: #e0e0e0;
-  --text-dim: #aaa;
+  --text-main: #f5f7ff;
+  --text-dim: #d4d8e3;
   --border: #333;
 }
 
@@ -19,6 +19,9 @@ body {
   font-family: 'Inter', -apple-system, sans-serif;
   background-color: var(--bg-dark);
   color: var(--text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .app-container {
@@ -49,6 +52,8 @@ body {
 .logo h1 {
   font-size: 1.5rem;
   letter-spacing: -1px;
+  color: var(--text-main);
+  font-weight: 700;
 }
 
 .section-title {
@@ -86,6 +91,52 @@ body {
 
 .input-group input:focus {
   border-color: var(--primary);
+}
+
+.input-with-suggestions {
+  position: relative;
+}
+
+.suggestion-list {
+  list-style: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 6px);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.35);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 30;
+}
+
+.suggestion-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #3a3a3a;
+}
+
+.suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.suggestion-item:hover {
+  background: #383838;
+}
+
+.suggestion-label {
+  display: block;
+  color: var(--text-main);
+  font-size: 0.85rem;
+}
+
+.suggestion-meta {
+  display: block;
+  color: var(--text-dim);
+  font-size: 0.72rem;
+  margin-top: 2px;
 }
 
 .search-button {
@@ -147,7 +198,7 @@ body {
 
 .empty-text {
   font-size: 0.85rem;
-  color: #555;
+  color: var(--text-dim);
 }
 
 /* Main Content Styling */
@@ -217,8 +268,8 @@ body {
 }
 
 .empty-graph p {
-  color: #555;
-  font-weight: 500;
+  color: var(--text-dim);
+  font-weight: 600;
 }
 
 .path-display {
@@ -259,4 +310,53 @@ body {
 @keyframes spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+/* Progress Overlay Styling */
+.progress-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(18, 18, 18, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  backdrop-filter: blur(4px);
+}
+
+.progress-card {
+  background: var(--bg-card);
+  padding: 24px 32px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.progress-info {
+  text-align: center;
+}
+
+.progress-info h3 {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.highlight {
+  color: var(--primary);
+  font-family: monospace;
+}
+
+.progress-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: var(--text-dim);
 }
