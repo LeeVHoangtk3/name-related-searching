@@ -1,33 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Search, Loader2, Share2, History, Info } from 'lucide-react';
 import ConnectionGraph from './components/Graph';
+import ProgressOverlay from './components/ProgressOverlay';
 import './App.css';
 
 // API URL cho backend FastAPI
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+const SEARCH_MAX_DEPTH = 8;
+const SEARCH_MODE = 'fast';
 
 function App() {
-  const [startNode, setStartNode] = useState('');
-  const [targetNode, setTargetNode] = useState('');
+  const [startInput, setStartInput] = useState('');
+  const [targetInput, setTargetInput] = useState('');
+  const [startSelection, setStartSelection] = useState(null);
+  const [targetSelection, setTargetSelection] = useState(null);
+  const [startSuggestions, setStartSuggestions] = useState([]);
+  const [targetSuggestions, setTargetSuggestions] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(null);
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [path, setPath] = useState([]);
   const [history, setHistory] = useState([]);
   const [error, setError] = useState(null);
 
-  // Lấy lịch sử toàn cục khi ứng dụng khởi chạy
-  // Fetch global history on component mount
-  useEffect(() => {
-    fetchGlobalHistory();
-    
-    // Polling mỗi 30 giây để cập nhật lịch sử mới từ người dùng khác
-    // Poll every 30 seconds to update new history from other users
-    const interval = setInterval(fetchGlobalHistory, 30000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchGlobalHistory = async () => {
+  const fetchGlobalHistory = useCallback(async () => {
     try {
       const response = await axios.get(`${API_BASE_URL}/history`);
       if (response.data && response.data.history) {
@@ -36,20 +33,121 @@ function App() {
     } catch (err) {
       console.error("Failed to fetch global history", err);
     }
+  }, []);
+
+  // Lấy lịch sử toàn cục khi ứng dụng khởi chạy
+  // Fetch global history on component mount
+  useEffect(() => {
+    const initialFetchTimer = setTimeout(() => {
+      fetchGlobalHistory();
+    }, 0);
+    
+    // Polling mỗi 30 giây để cập nhật lịch sử mới từ người dùng khác
+    // Poll every 30 seconds to update new history from other users
+    const interval = setInterval(fetchGlobalHistory, 30000);
+    return () => {
+      clearTimeout(initialFetchTimer);
+      clearInterval(interval);
+    };
+  }, [fetchGlobalHistory]);
+
+  const fetchSuggestions = async (query, setSuggestionState) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/suggestions`, {
+        params: { q: query, limit: 8 },
+      });
+      setSuggestionState(response.data?.suggestions || []);
+    } catch (err) {
+      setSuggestionState([]);
+      console.error("Failed to fetch suggestions", err);
+    }
   };
 
-  const handleSearch = async () => {
-    if (!startNode || !targetNode) return;
+  useEffect(() => {
+    const query = startInput.trim();
+    if (query.length < 2 || (startSelection && query === startSelection.label)) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetchSuggestions(query, setStartSuggestions);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [startInput, startSelection]);
+
+  useEffect(() => {
+    const query = targetInput.trim();
+    if (query.length < 2 || (targetSelection && query === targetSelection.label)) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetchSuggestions(query, setTargetSuggestions);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [targetInput, targetSelection]);
+
+  const handleStartChange = (value) => {
+    setStartInput(value);
+    if (value.trim().length < 2) {
+      setStartSuggestions([]);
+    }
+    if (!startSelection || value !== startSelection.label) {
+      setStartSelection(null);
+    }
+  };
+
+  const handleTargetChange = (value) => {
+    setTargetInput(value);
+    if (value.trim().length < 2) {
+      setTargetSuggestions([]);
+    }
+    if (!targetSelection || value !== targetSelection.label) {
+      setTargetSelection(null);
+    }
+  };
+
+  const handleSuggestionSelect = (field, item) => {
+    if (field === 'start') {
+      setStartInput(item.label);
+      setStartSelection(item);
+      setStartSuggestions([]);
+      return;
+    }
+    setTargetInput(item.label);
+    setTargetSelection(item);
+    setTargetSuggestions([]);
+  };
+
+  const handleSearch = () => {
+    const startValue = startSelection?.qid || startInput.trim();
+    const targetValue = targetSelection?.qid || targetInput.trim();
+
+    if (!startValue || !targetValue) return;
     
     setLoading(true);
     setError(null);
-    try {
-      const response = await axios.get(`${API_BASE_URL}/search`, {
-        params: { start: startNode, target: targetNode, max_depth: 3 }
-      });
-      
-      if (response.data.status === 'success') {
-        const foundPath = response.data.path;
+    setProgress({ node_id: 'Initializing...', total_explored: 0, current_depth: 0, elapsed_seconds: 0 });
+
+    const url = new URL(`${API_BASE_URL}/search/stream`);
+    url.searchParams.append('start', startValue);
+    url.searchParams.append('target', targetValue);
+    url.searchParams.append('max_depth', SEARCH_MAX_DEPTH);
+    url.searchParams.append('mode', SEARCH_MODE);
+
+    const eventSource = new EventSource(url.toString());
+
+    eventSource.addEventListener('progress', (e) => {
+      const data = JSON.parse(e.data);
+      setProgress(data);
+    });
+
+    eventSource.addEventListener('complete', (e) => {
+      const data = JSON.parse(e.data);
+      if (data.status === 'success') {
+        const foundPath = data.path;
         setPath(foundPath);
         
         // Chuyển đổi đường đi thành định dạng graph (nodes & links)
@@ -62,18 +160,24 @@ function App() {
         setGraphData({ nodes, links });
         
         // Cập nhật lại lịch sử toàn cục sau khi tìm kiếm thành công
-        await fetchGlobalHistory();
+        fetchGlobalHistory();
       } else {
         setError('Không tìm thấy đường nối giữa hai người này.');
         setPath([]);
         setGraphData({ nodes: [], links: [] });
       }
-    } catch (err) {
-      setError('Đã xảy ra lỗi khi tìm kiếm. Vui lòng kiểm tra lại Wikidata ID.');
-      console.error(err);
-    } finally {
+      eventSource.close();
       setLoading(false);
-    }
+      setProgress(null);
+    });
+
+    eventSource.addEventListener('error', (e) => {
+      setError('Đã xảy ra lỗi khi kết nối server.');
+      console.error("EventSource error:", e);
+      eventSource.close();
+      setLoading(false);
+      setProgress(null);
+    });
   };
 
   return (
@@ -89,21 +193,61 @@ function App() {
           <h2 className="section-title">Tìm kiếm liên kết</h2>
           <div className="input-group">
             <label>BẮT ĐẦU (WIKIDATA ID)</label>
-            <input 
-              type="text" 
-              placeholder="Ví dụ: Q34660 (J.K. Rowling)" 
-              value={startNode}
-              onChange={(e) => setStartNode(e.target.value)}
-            />
+            <div className="input-with-suggestions">
+              <input 
+                type="text" 
+                placeholder="Ví dụ: J.K. Rowling hoặc Q34660" 
+                value={startInput}
+                onChange={(e) => handleStartChange(e.target.value)}
+                onBlur={() => setTimeout(() => setStartSuggestions([]), 150)}
+              />
+              {startSuggestions.length > 0 && (
+                <ul className="suggestion-list">
+                  {startSuggestions.map((item) => (
+                    <li
+                      key={`start-${item.qid}`}
+                      className="suggestion-item"
+                      onMouseDown={() => handleSuggestionSelect('start', item)}
+                    >
+                      <span className="suggestion-label">{item.label}</span>
+                      <span className="suggestion-meta">
+                        {item.qid}
+                        {item.source === 'history' ? ' · history' : ''}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
           <div className="input-group">
             <label>ĐÍCH ĐẾN (WIKIDATA ID)</label>
-            <input 
-              type="text" 
-              placeholder="Ví dụ: Q173746 (Neil Gaiman)" 
-              value={targetNode}
-              onChange={(e) => setTargetNode(e.target.value)}
-            />
+            <div className="input-with-suggestions">
+              <input 
+                type="text" 
+                placeholder="Ví dụ: Neil Gaiman hoặc Q173746" 
+                value={targetInput}
+                onChange={(e) => handleTargetChange(e.target.value)}
+                onBlur={() => setTimeout(() => setTargetSuggestions([]), 150)}
+              />
+              {targetSuggestions.length > 0 && (
+                <ul className="suggestion-list">
+                  {targetSuggestions.map((item) => (
+                    <li
+                      key={`target-${item.qid}`}
+                      className="suggestion-item"
+                      onMouseDown={() => handleSuggestionSelect('target', item)}
+                    >
+                      <span className="suggestion-label">{item.label}</span>
+                      <span className="suggestion-meta">
+                        {item.qid}
+                        {item.source === 'history' ? ' · history' : ''}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
           <button 
             className="search-button" 
@@ -146,6 +290,7 @@ function App() {
         </header>
 
         <div className="graph-wrapper">
+          {loading && <ProgressOverlay progress={progress} />}
           {graphData.nodes.length > 0 ? (
             <ConnectionGraph data={graphData} />
           ) : (
