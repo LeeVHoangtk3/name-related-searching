@@ -38,6 +38,19 @@ npm run dev
 ```
 Frontend sẽ chạy tại: `http://localhost:5173`
 
+## Chạy toàn bộ dự án bằng Docker Compose
+
+Từ thư mục gốc repository:
+
+```bash
+docker compose up --build
+```
+
+Các service sẽ chạy tại:
+- Frontend: `http://localhost:5173`
+- Backend API: `http://localhost:8000`
+- Redis: `localhost:6379`
+
 ## Cách sử dụng
 1. Tìm Wikidata ID của hai người bạn muốn liên kết (ví dụ: `Q34660` cho J.K. Rowling).
 2. Nhập ID bắt đầu và ID đích vào thanh tìm kiếm.

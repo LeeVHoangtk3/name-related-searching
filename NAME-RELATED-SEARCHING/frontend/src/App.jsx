@@ -1,14 +1,17 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { Search, Loader2, Share2, History, Info } from 'lucide-react';
 import ConnectionGraph from './components/Graph';
 import ProgressOverlay from './components/ProgressOverlay';
+import { buildGraphData, buildPathNodeLabels } from './lib/graphData';
 import './App.css';
 
 // API URL cho backend FastAPI
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 const SEARCH_MAX_DEPTH = 8;
 const SEARCH_MODE = 'fast';
+const WIKIDATA_ENTITY_API = 'https://www.wikidata.org/w/api.php';
+const QID_PATTERN = /^Q\d+$/i;
 
 function App() {
   const [startInput, setStartInput] = useState('');
@@ -23,6 +26,7 @@ function App() {
   const [path, setPath] = useState([]);
   const [history, setHistory] = useState([]);
   const [error, setError] = useState(null);
+  const latestGraphPathRef = useRef('');
 
   const fetchGlobalHistory = useCallback(async () => {
     try {
@@ -62,6 +66,43 @@ function App() {
       console.error("Failed to fetch suggestions", err);
     }
   };
+
+  const fetchPathLabels = useCallback(async (pathIds, fallbackLabels) => {
+    const response = await axios.get(WIKIDATA_ENTITY_API, {
+      params: {
+        action: 'wbgetentities',
+        ids: pathIds.join('|'),
+        languages: 'en',
+        props: 'labels',
+        format: 'json',
+        origin: '*',
+      },
+    });
+
+    const entities = response.data?.entities || {};
+    const entitySummaries = {};
+    for (const qid of pathIds) {
+      entitySummaries[qid] = {
+        label: entities[qid]?.labels?.en?.value || '',
+      };
+    }
+
+    return buildPathNodeLabels(pathIds, entitySummaries, fallbackLabels);
+  }, []);
+
+  const updateGraphLabels = useCallback(async (pathIds, fallbackLabels) => {
+    const pathKey = pathIds.join('>');
+
+    try {
+      const labels = await fetchPathLabels(pathIds, fallbackLabels);
+      if (latestGraphPathRef.current !== pathKey) {
+        return;
+      }
+      setGraphData(buildGraphData(pathIds, labels));
+    } catch (err) {
+      console.error('Failed to fetch path labels', err);
+    }
+  }, [fetchPathLabels]);
 
   useEffect(() => {
     const query = startInput.trim();
@@ -149,19 +190,20 @@ function App() {
       if (data.status === 'success') {
         const foundPath = data.path;
         setPath(foundPath);
-        
-        // Chuyển đổi đường đi thành định dạng graph (nodes & links)
-        const nodes = foundPath.map(id => ({ id, name: id }));
-        const links = [];
-        for (let i = 0; i < foundPath.length - 1; i++) {
-          links.push({ source: foundPath[i], target: foundPath[i+1] });
-        }
-        
-        setGraphData({ nodes, links });
+
+        const fallbackLabels = buildPathNodeLabels(foundPath, {}, {
+          [startValue]: startSelection?.label || (QID_PATTERN.test(startInput.trim()) ? '' : startInput.trim()),
+          [targetValue]: targetSelection?.label || (QID_PATTERN.test(targetInput.trim()) ? '' : targetInput.trim()),
+        });
+        const pathKey = foundPath.join('>');
+        latestGraphPathRef.current = pathKey;
+        setGraphData(buildGraphData(foundPath, fallbackLabels));
+        void updateGraphLabels(foundPath, fallbackLabels);
         
         // Cập nhật lại lịch sử toàn cục sau khi tìm kiếm thành công
         fetchGlobalHistory();
       } else {
+        latestGraphPathRef.current = '';
         setError('Không tìm thấy đường nối giữa hai người này.');
         setPath([]);
         setGraphData({ nodes: [], links: [] });

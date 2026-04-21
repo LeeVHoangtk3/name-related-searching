@@ -23,6 +23,36 @@ DEEP_MAX_NODES = 15000
 DEEP_QUERY_TIMEOUT = 12
 
 
+def build_path_cache_key(start_id: str, target_id: str, mode: str, effective_depth: int) -> str:
+    return f"path:{start_id}:{target_id}:{mode}:{effective_depth}"
+
+
+def resolve_search_config(mode: str, max_depth: int):
+    if mode == "fast":
+        effective_depth = min(max_depth, FAST_DEPTH)
+        return (
+            effective_depth,
+            partial(
+                get_neighbors,
+                limit=FAST_NEIGHBOR_LIMIT,
+                timeout=FAST_QUERY_TIMEOUT,
+            ),
+            FAST_MAX_NODES,
+            None,
+        )
+
+    return (
+        max_depth,
+        partial(
+            get_neighbors,
+            limit=DEEP_NEIGHBOR_LIMIT,
+            timeout=DEEP_QUERY_TIMEOUT,
+        ),
+        DEEP_MAX_NODES,
+        None,
+    )
+
+
 def resolve_entity_input(value: str) -> str:
     normalized = value.strip()
     if not normalized:
@@ -57,32 +87,15 @@ def search_path(
                 detail="start/target must be a Wikidata QID or a resolvable entity name.",
             )
 
+        effective_depth, neighbor_fetcher, max_nodes, max_seconds = resolve_search_config(mode, max_depth)
+
         # 1. Kiểm tra cache Redis cho kết quả path
-        cache_key = f"path:{start_id}:{target_id}"
+        cache_key = build_path_cache_key(start_id, target_id, mode, effective_depth)
         cached_path = get_cache(cache_key)
         
         if cached_path:
             add_to_history(start_id, target_id)
             return {"status": "success", "path": cached_path, "source": "cache"}
-
-        if mode == "fast":
-            effective_depth = min(max_depth, FAST_DEPTH)
-            neighbor_fetcher = partial(
-                get_neighbors,
-                limit=FAST_NEIGHBOR_LIMIT,
-                timeout=FAST_QUERY_TIMEOUT,
-            )
-            max_nodes = FAST_MAX_NODES
-            max_seconds = None
-        else:
-            effective_depth = max_depth
-            neighbor_fetcher = partial(
-                get_neighbors,
-                limit=DEEP_NEIGHBOR_LIMIT,
-                timeout=DEEP_QUERY_TIMEOUT,
-            )
-            max_nodes = DEEP_MAX_NODES
-            max_seconds = None
 
         # 2. Nếu không có cache, thực hiện BFS
         path = find_path(
@@ -130,8 +143,10 @@ async def search_path_stream(
         )
 
     async def event_generator() -> AsyncGenerator[dict, None]:
+        effective_depth, neighbor_fetcher, max_nodes, _ = resolve_search_config(mode, max_depth)
+
         # 1. Check Redis cache first
-        cache_key = f"path:{start_id}:{target_id}"
+        cache_key = build_path_cache_key(start_id, target_id, mode, effective_depth)
         cached_path = get_cache(cache_key)
         if cached_path:
             add_to_history(start_id, target_id)
@@ -140,24 +155,6 @@ async def search_path_stream(
                 "data": json.dumps({"status": "success", "path": cached_path, "source": "cache"})
             }
             return
-
-        # 2. Setup BFS parameters
-        if mode == "fast":
-            effective_depth = min(max_depth, FAST_DEPTH)
-            neighbor_fetcher = partial(
-                get_neighbors,
-                limit=FAST_NEIGHBOR_LIMIT,
-                timeout=FAST_QUERY_TIMEOUT,
-            )
-            max_nodes = FAST_MAX_NODES
-        else:
-            effective_depth = max_depth
-            neighbor_fetcher = partial(
-                get_neighbors,
-                limit=DEEP_NEIGHBOR_LIMIT,
-                timeout=DEEP_QUERY_TIMEOUT,
-            )
-            max_nodes = DEEP_MAX_NODES
 
         queue = asyncio.Queue()
         loop = asyncio.get_running_loop()

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from app.clients.wikidata import wikidata_client
 from app.core.config import settings
 from app.core.redis import get_cache, set_cache
@@ -9,25 +9,37 @@ def build_neighbor_query(wikidata_id: str, limit: int = settings.DEFAULT_LIMIT) 
     Build SPARQL query to find neighbor entities (humans).
     """
     return f"""
-    SELECT ?neighbor WHERE {{
-      wd:{wikidata_id} ?p ?neighbor .
-      ?neighbor wdt:P31 wd:Q5 .
+    SELECT DISTINCT ?neighbor WHERE {{
+      {{
+        wd:{wikidata_id} ?p ?neighbor .
+        FILTER(STRSTARTS(STR(?neighbor), "http://www.wikidata.org/entity/Q"))
+      }}
+      UNION
+      {{
+        ?neighbor ?p wd:{wikidata_id} .
+        FILTER(STRSTARTS(STR(?neighbor), "http://www.wikidata.org/entity/Q"))
+      }}
+      FILTER(?neighbor != wd:{wikidata_id})
     }}
     LIMIT {limit}
     """
 
-def get_neighbors(wikidata_id: str) -> List[str]:
+def get_neighbors(
+    wikidata_id: str,
+    limit: int = settings.DEFAULT_LIMIT,
+    timeout: Optional[int] = None,
+) -> List[str]:
     """
     Lấy danh sách ID của các thực thể lân cận từ Wikidata, có sử dụng Redis cache.
     Get a list of IDs of neighbor entities from Wikidata, using Redis cache.
     """
-    cache_key = f"neighbors:{wikidata_id}"
+    cache_key = f"neighbors:{wikidata_id}:{limit}"
     cached = get_cache(cache_key)
     if cached:
         return cached
 
-    query = build_neighbor_query(wikidata_id)
-    bindings = wikidata_client.query(query)
+    query = build_neighbor_query(wikidata_id, limit=limit)
+    bindings = wikidata_client.query(query, timeout=timeout)
 
     neighbors: List[str] = []
     for item in bindings:
