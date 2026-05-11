@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.env
+env/
+venv/
+venv.bak/
+*.venv
+.Python
+pyenv/
+
+# Backend caches and local files
+*.sqlite3
+*.db
+*.egg-info/
+*.cover
+.coverage
+htmlcov/
+
+# VS Code
+.vscode/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+pnpm-lock.yaml
+
+# Vite / frontend build
+dist/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Optional environment and editor files
+.env.local
+.env.*.local
+.idea/
