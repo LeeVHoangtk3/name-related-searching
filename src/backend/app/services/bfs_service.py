@@ -1,22 +1,4 @@
 from collections import deque
-<<<<<<< HEAD
-from typing import Callable, List, Optional
-
-
-def find_path(
-    start: str,
-    target: str,
-    get_neighbors: Callable[[str], List[str]],
-    max_depth: int = 4,
-) -> Optional[List[str]]:
-    queue = deque([(start, [start], 0)])
-    visited = {start}
-
-    while queue:
-        current, path, depth = queue.popleft()
-        if current == target:
-            return path
-=======
 from typing import Callable, Dict, List, Optional
 import time
 from app.services.neighbor_wikidata import get_neighbors
@@ -35,7 +17,6 @@ def _build_path(meeting: str, forward_parent: Dict[str, Optional[str]], backward
     while node is not None:
         backward_path.append(node)
         node = backward_parent[node]
->>>>>>> origin/main
 
     return forward_path + backward_path
 
@@ -123,14 +104,6 @@ def find_path(
         except SearchLimitReached:
             return None
 
-<<<<<<< HEAD
-        for n in get_neighbors(current):
-            if n not in visited:
-                visited.add(n)
-                queue.append((n, path + [n], depth + 1))
-
-    return None
-=======
         try:
             if forward_queue and (not backward_queue or len(forward_queue) <= len(backward_queue)):
                 meeting = expand_one_layer(forward_queue, forward_parent, forward_depth, backward_parent, backward_depth)
@@ -165,4 +138,3 @@ if __name__ == "__main__":
         print(" -> ".join(path))
     else:
         print("NO PATH FOUND")
->>>>>>> origin/main

@@ -1,106 +1,3 @@
-<<<<<<< HEAD
-import { useState } from 'react'
-
-function App() {
-    const [fromName, setFromName] = useState('')
-    const [toName, setToName] = useState('')
-    const [loading, setLoading] = useState(false)
-    const [result, setResult] = useState(null)
-    const [error, setError] = useState(null)
-
-    const handleSubmit = async (e) => {
-        e.preventDefault()
-        setLoading(true)
-        setError(null)
-        setResult(null)
-
-        try {
-            const response = await fetch('http://localhost:8000/find-path', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ from_name: fromName, to_name: toName }),
-            })
-
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`)
-            }
-
-            const data = await response.json()
-            setResult(data)
-        } catch (err) {
-            setError(err.message || 'Something went wrong')
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    return (
-        <div className="container">
-            <h1>Path Finder</h1>
-            <form onSubmit={handleSubmit} className="form">
-                <div className="input-group">
-                    <label htmlFor="fromName">From Name:</label>
-                    <input
-                        id="fromName"
-                        type="text"
-                        value={fromName}
-                        onChange={(e) => setFromName(e.target.value)}
-                        placeholder="e.g. Elon Musk"
-                        required
-                        disabled={loading}
-                    />
-                </div>
-
-                <div className="input-group">
-                    <label htmlFor="toName">To Name:</label>
-                    <input
-                        id="toName"
-                        type="text"
-                        value={toName}
-                        onChange={(e) => setToName(e.target.value)}
-                        placeholder="e.g. Donald Trump"
-                        required
-                        disabled={loading}
-                    />
-                </div>
-
-                <button type="submit" disabled={loading} className="submit-btn">
-                    {loading ? 'Finding Path...' : 'Find Connection'}
-                </button>
-            </form>
-
-            {error && <div className="error">Error: {error}</div>}
-
-            {result && (
-                <div className="result">
-                    <div className="person-info">
-                        <p><strong>From:</strong> {result.from_person?.label} ({result.from_person?.qid})</p>
-                        <p><strong>To:</strong> {result.to_person?.label} ({result.to_person?.qid})</p>
-                    </div>
-
-                    <h3>Path:</h3>
-                    {result.path === null ? (
-                        <p className="no-path">{result.message || 'No connection found'}</p>
-                    ) : (
-                        <ul className="path-list">
-                            {result.path.map((node, index) => (
-                                <li key={index} className="path-item">
-                                    <span className="node-name">{node.label}</span>
-                                    {index < result.path.length - 1 && <span className="arrow">→</span>}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
-            )}
-        </div>
-    )
-}
-
-export default App
-=======
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
 import { Search, Loader2, Share2, History, Info } from 'lucide-react';
@@ -148,7 +45,7 @@ function App() {
     const initialFetchTimer = setTimeout(() => {
       fetchGlobalHistory();
     }, 0);
-    
+
     // Polling mỗi 30 giây để cập nhật lịch sử mới từ người dùng khác
     // Poll every 30 seconds to update new history from other users
     const interval = setInterval(fetchGlobalHistory, 30000);
@@ -270,7 +167,7 @@ function App() {
     const targetValue = targetSelection?.qid || targetInput.trim();
 
     if (!startValue || !targetValue) return;
-    
+
     setLoading(true);
     setError(null);
     setProgress({ node_id: 'Initializing...', total_explored: 0, current_depth: 0, elapsed_seconds: 0 });
@@ -302,7 +199,7 @@ function App() {
         latestGraphPathRef.current = pathKey;
         setGraphData(buildGraphData(foundPath, fallbackLabels));
         void updateGraphLabels(foundPath, fallbackLabels);
-        
+
         // Cập nhật lại lịch sử toàn cục sau khi tìm kiếm thành công
         fetchGlobalHistory();
       } else {
@@ -333,15 +230,15 @@ function App() {
           <Share2 size={24} color="#bb86fc" />
           <h1>WikiBFS</h1>
         </div>
-        
+
         <div className="search-section">
           <h2 className="section-title">Tìm kiếm liên kết</h2>
           <div className="input-group">
             <label>BẮT ĐẦU (WIKIDATA ID)</label>
             <div className="input-with-suggestions">
-              <input 
-                type="text" 
-                placeholder="Ví dụ: J.K. Rowling hoặc Q34660" 
+              <input
+                type="text"
+                placeholder="Ví dụ: J.K. Rowling hoặc Q34660"
                 value={startInput}
                 onChange={(e) => handleStartChange(e.target.value)}
                 onBlur={() => setTimeout(() => setStartSuggestions([]), 150)}
@@ -368,9 +265,9 @@ function App() {
           <div className="input-group">
             <label>ĐÍCH ĐẾN (WIKIDATA ID)</label>
             <div className="input-with-suggestions">
-              <input 
-                type="text" 
-                placeholder="Ví dụ: Neil Gaiman hoặc Q173746" 
+              <input
+                type="text"
+                placeholder="Ví dụ: Neil Gaiman hoặc Q173746"
                 value={targetInput}
                 onChange={(e) => handleTargetChange(e.target.value)}
                 onBlur={() => setTimeout(() => setTargetSuggestions([]), 150)}
@@ -394,8 +291,8 @@ function App() {
               )}
             </div>
           </div>
-          <button 
-            className="search-button" 
+          <button
+            className="search-button"
             onClick={handleSearch}
             disabled={loading}
           >
@@ -430,7 +327,7 @@ function App() {
             </div>
           </div>
           <div className="header-actions">
-             <Info size={20} className="info-icon" />
+            <Info size={20} className="info-icon" />
           </div>
         </header>
 
@@ -467,4 +364,3 @@ function App() {
 }
 
 export default App;
->>>>>>> origin/main
