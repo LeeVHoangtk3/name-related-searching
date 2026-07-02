@@ -182,7 +182,7 @@ async def search_path_stream(
                     add_to_history(start_id, target_id)
                     result = {"status": "success", "path": path, "source": "api"}
                 else:
-                    print(f"[INFO] BFS No path found.")
+                    print("[INFO] BFS No path found.")
                     result = {"status": "no_path", "path": [], "mode": mode}
                     if mode == "fast":
                         result["suggestion"] = "Retry with mode=deep for broader search."

@@ -10,7 +10,7 @@ class SearchLogicTests(unittest.TestCase):
         query = build_neighbor_query("Q42", limit=50)
         self.assertIn("wd:Q42 ?p ?neighbor", query)
         self.assertIn("?neighbor ?p wd:Q42", query)
-        self.assertIn('STRSTARTS(STR(?neighbor), "http://www.wikidata.org/entity/Q")', query)
+        self.assertIn("FILTER(isURI(?neighbor))", query)
         self.assertNotIn("wdt:P31 wd:Q5", query)
 
     def test_search_path_defaults_to_fast_mode_limits_and_constraint_aware_cache_key(self):

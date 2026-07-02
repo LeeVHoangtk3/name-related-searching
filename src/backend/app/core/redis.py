@@ -9,8 +9,29 @@ logger = logging.getLogger(__name__)
 # Connect to Redis
 redis_client = redis.from_url(settings.REDIS_URL, decode_responses=True)
 
+from collections import OrderedDict
+
+# Bounded LRU Cache for fallback in-memory cache
+class BoundedLRUCache:
+    def __init__(self, capacity: int = 50000):
+        self.capacity = capacity
+        self.cache = OrderedDict()
+
+    def get(self, key: str, default=None):
+        if key not in self.cache:
+            return default
+        self.cache.move_to_end(key)
+        return self.cache[key]
+
+    def __setitem__(self, key: str, value: any):
+        if key in self.cache:
+            self.cache.move_to_end(key)
+        self.cache[key] = value
+        if len(self.cache) > self.capacity:
+            self.cache.popitem(last=False)
+
 # In-memory fallbacks
-_memory_cache = {}
+_memory_cache = BoundedLRUCache(capacity=50000)
 _memory_history = []
 
 def get_cache(key: str):

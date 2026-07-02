@@ -94,7 +94,23 @@ Backend đóng vai trò là một Agent Client truy xuất trực tiếp dữ li
 
 ---
 
-## 6. Thư Viện & Công Nghệ Sử Dụng (Technologies Stack)
+## 6. Thuật Toán Tìm Kiếm Cốt Lõi (Bi-directional BFS)
+
+Trái tim của hệ thống là thuật toán **Tìm kiếm theo chiều rộng 2 chiều (Bi-directional Breadth-First Search)** được triển khai chặt chẽ trong `bfs_service.py`. Tại sao không dùng BFS 1 chiều thông thường? Vì đồ thị Wikidata là một mạng lưới khổng lồ (với hàng chục triệu node và tỷ cạnh), việc quét 1 chiều từ A -> B sẽ tạo ra sự bùng nổ tổ hợp (combinatorial explosion) dẫn đến quá tải bộ nhớ rất nhanh.
+
+Cơ chế hoạt động chi tiết của thuật toán:
+1. **Khởi tạo 2 hàng đợi (Queues):** `forward_queue` bắt đầu từ `start_id` và `backward_queue` bắt đầu từ `target_id` (sử dụng `collections.deque` để tối ưu O(1) thao tác popleft). Đi kèm là 2 từ điển (dictionary) để lưu vết đường đi (`forward_parent`, `backward_parent`) và lưu độ sâu (`forward_depth`, `backward_depth`).
+2. **Chiến lược Cân Bằng (Load-balancing):** Ở mỗi vòng lặp `while`, hệ thống kiểm tra và so sánh kích thước của 2 hàng đợi. Nó luôn chọn **hàng đợi có ít node hơn** (`len(forward_queue) <= len(backward_queue)`) để mở rộng (expand). Việc này đảm bảo thuật toán luôn ưu tiên phát triển nhánh đồ thị thưa thớt hơn, tiết kiệm tài nguyên và số lượng lệnh gọi API tối đa.
+3. **Mở rộng theo lớp (Layer Expansion):** Hàm `expand_one_layer` sẽ duyệt toàn bộ các node ở tầng hiện tại trước khi nhảy sang tầng tiếp theo. Với mỗi node được bốc ra (`queue.popleft()`), hệ thống sẽ gọi `get_neighbors()` (bắn SPARQL) để tìm các nhánh tiếp theo. Đồng thời tại đây, một `yield` event thông qua cơ chế SSE được bắn về Frontend để đẩy thanh tiến độ (Progress bar).
+4. **Cơ chế Hội Ngộ (Meeting Point):** Nếu một node láng giềng vừa tìm được ở nhánh này đã nằm sẵn trong `parent_dict` của nhánh bên kia (nghĩa là `neighbor in other_parent`), và tổng độ sâu (`depth + other_depth`) nhỏ hơn hoặc bằng `max_depth` cho phép, thì hệ thống xác định **Điểm Hội Ngộ** đã được tìm thấy và lập tức dừng duyệt.
+5. **Dựng lại đường đi (Path Reconstruction):** Hàm nội bộ `_build_path` sẽ đi ngược (gỡ băng) từ điểm hội ngộ về điểm xuất phát thông qua `forward_parent` và từ điểm hội ngộ về đích thông qua `backward_parent`. Cả 2 mảng được ghép lại tạo thành chuỗi liên kết hoàn chỉnh từ đầu đến cuối.
+6. **Failsafes (Bảo vệ Server):** Hàm `enforce_limits()` chèn ở khắp mọi nơi trong thân vòng lặp, có nhiệm vụ "bóp cò" chặn đứng quá trình quét ném ra Exception `SearchLimitReached` nếu: 
+   - Tổng số node mở rộng đã chạm trần (vd: 15.000 nodes).
+   - Tổng thời gian chạy đã chạm trần (vd: 12 giây).
+
+---
+
+## 7. Thư Viện & Công Nghệ Sử Dụng (Technologies Stack)
 
 ### **Frontend:**
 - **React (v19) & Vite:** Xây dựng giao diện người dùng và build project siêu tốc.
@@ -117,7 +133,7 @@ Backend đóng vai trò là một Agent Client truy xuất trực tiếp dữ li
 
 ---
 
-## 7. Cấu Trúc File & Folder Chi Tiết
+## 8. Cấu Trúc File & Folder Chi Tiết
 
 Dưới đây là cấu trúc cây thư mục phản ánh rõ kiến trúc Client-Server của dự án:
 

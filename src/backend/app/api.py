@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from typing import Optional, List
 
 from app.services.normalize import normalize_name
-from app.services.path_service import find_path_cached, find_path_bidirectional
+from app.services.path_service import find_path_bidirectional
 
 app = FastAPI(title="Name Related Searching API")
 

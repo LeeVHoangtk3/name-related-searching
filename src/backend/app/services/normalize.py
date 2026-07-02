@@ -38,7 +38,7 @@ def normalize_name(name: str, limit: int = 5) -> List[Dict]:
     try:
         res.raise_for_status()
         data = res.json()
-    except Exception as e:
+    except Exception:
         print("❌ Wikidata search failed")
         print("Status:", res.status_code)
         print("Body:", res.text[:500])

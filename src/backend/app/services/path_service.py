@@ -1,5 +1,4 @@
-from typing import Optional, List, Dict
-from collections import deque
+from typing import Optional, List, Dict, Callable
 import requests
 import time
 
@@ -126,6 +125,74 @@ def find_path_cached(
     return None
 
 
+def make_heuristic_neighbor_fetcher(
+    target_qid: str,
+    raw_get_neighbors: Callable[[str], List[str]],
+) -> Callable[[str], List[str]]:
+    """
+    Tạo ra một hàm get_neighbors có tích hợp logic lọc/phân cấp thực thể (Person/Hub)
+    và ưu tiên hub đích (target_hubs).
+    """
+    target_hubs = set()
+    try:
+        target_nbs = raw_get_neighbors(target_qid)
+        for nb in target_nbs:
+            types = get_entity_type(nb)
+            if any(t in ALLOWED_HUB_CLASSES for t in types):
+                target_hubs.add(nb)
+    except Exception as e:
+        print(f"[WARN] Failed to resolve target hubs for {target_qid}: {e}")
+
+    def heuristic_fetcher(node: str) -> List[str]:
+        try:
+            current_types = get_entity_type(node)
+        except Exception as e:
+            print(f"[WARN] Failed to get entity type for {node}: {e}")
+            return []
+
+        if "Q5" in current_types:
+            current_kind = "person"
+        elif any(t in ALLOWED_HUB_CLASSES for t in current_types):
+            current_kind = "hub"
+        else:
+            return []
+
+        try:
+            raw_neighbors = raw_get_neighbors(node)
+        except Exception as e:
+            print(f"[WARN] Failed to get neighbors for {node}: {e}")
+            return []
+
+        priority_nbs = []
+        normal_nbs = []
+
+        for nb in raw_neighbors:
+            try:
+                nb_types = get_entity_type(nb)
+            except Exception as e:
+                print(f"[WARN] Failed to get entity type for {nb}: {e}")
+                continue
+
+            if "Q5" in nb_types:
+                nb_kind = "person"
+            elif any(t in ALLOWED_HUB_CLASSES for t in nb_types):
+                nb_kind = "hub"
+            else:
+                continue
+
+            if current_kind == "hub" and nb_kind == "hub":
+                continue
+
+            if target_hubs and current_kind == "hub" and nb in target_hubs:
+                priority_nbs.insert(0, nb)
+            else:
+                normal_nbs.append(nb)
+
+        return priority_nbs + normal_nbs
+
+    return heuristic_fetcher
+
+
 def find_path_bidirectional(
     start_qid: str,
     target_qid: str,
@@ -134,142 +201,20 @@ def find_path_bidirectional(
     """
     Bidirectional BFS to find shortest path between two Wikidata QIDs.
     Returns path with labels: [{'qid': '...', 'label': '...'}, ...]
+    Centralized core search logic in bfs_service.py.
     """
-
     if start_qid == target_qid:
         return resolve_labels([start_qid])
 
-    # Queues store (qid, depth)
-    q_start = deque([(start_qid, 0)])
-    q_target = deque([(target_qid, 0)])
+    heuristic_fetcher = make_heuristic_neighbor_fetcher(target_qid, get_neighbors)
 
-    # Visited sets (store QIDs)
-    visited_start = {start_qid: "person"}
-    visited_target = {target_qid: "person"} 
+    path_qids = find_path(
+        start=start_qid,
+        target=target_qid,
+        get_neighbors=heuristic_fetcher,
+        max_depth=max_depth,
+    )
 
-    # Parent maps
-    parent_start = {start_qid: None}
-    parent_target = {target_qid: None}
-
-    target_hubs = get_target_hubs(target_qid)
-
-
-    while q_start and q_target:
-
-        # ⭐ luôn mở frontier nông hơn
-        # so sánh length depth của 2 queue
-        if q_start[0][1] <= q_target[0][1]:
-            meet = _expand(
-                q_start,
-                visited_start,
-                visited_target,
-                parent_start,
-                target_hubs,
-                max_depth
-            )
-        else:
-            meet = _expand(
-                q_target,
-                visited_target,
-                visited_start,
-                parent_target,
-                None,          # ❗ không heuristic phía target
-                max_depth
-            )
-
-
-        if meet:
-            path_qids = _build_path(meet, parent_start, parent_target)
-            return resolve_labels(path_qids)
-
+    if path_qids:
+        return resolve_labels(path_qids)
     return None
-
-
-def _expand(queue, visited_this, visited_other, parent, target_hubs, max_depth):
-    """
-    Expand one BFS layer with depth limit.
-    """
-
-    for _ in range(len(queue)):
-        current, depth = queue.popleft()
-
-        if depth >= max_depth:
-            continue
-
-        current_kind = visited_this[current]
-        neighbors = get_neighbors(current)
-
-        priority = deque()
-        normal = deque()
-
-        for nb in neighbors:
-            if nb in visited_this:
-                continue
-
-            types = get_entity_type(nb)
-
-            if "Q5" in types:
-                nb_kind = "person"
-            elif any(t in ALLOWED_HUB_CLASSES for t in types):
-                nb_kind = "hub"
-            else:
-                continue
-
-            if current_kind == "hub" and nb_kind == "hub":
-                continue
-
-            parent[nb] = current
-            visited_this[nb] = nb_kind
-
-            if nb in visited_other:
-                return nb
-
-            if target_hubs and current_kind == "hub" and nb in target_hubs:
-                priority.appendleft((nb, depth + 1))
-            else:
-                normal.append((nb, depth + 1))
-
-        queue.extend(priority)
-        queue.extend(normal)
-
-    return None
-
-
-
-
-def _build_path(meet, parent_start, parent_target):
-    """
-    Reconstruct path from both sides.
-    Returns List[str] (QIDs)
-    """
-    path_start = []
-    cur = meet
-    while cur:
-        path_start.append(cur)
-        cur = parent_start.get(cur)
-    path_start.reverse()
-
-    path_target = []
-    cur = parent_target.get(meet)
-    while cur:
-        path_target.append(cur)
-        cur = parent_target.get(cur)
-
-    return path_start + path_target
-
-
-
-def get_target_hubs(target_qid: str) -> set[str]:
-    """
-    Lấy tập hub (organization / club / party / position)
-    mà target liên quan tới.
-    """
-    hubs = set()
-    neighbors = get_neighbors(target_qid)
-
-    for nb in neighbors:
-        types = get_entity_type(nb)
-        if any(t in ALLOWED_HUB_CLASSES for t in types):
-            hubs.add(nb)
-
-    return hubs

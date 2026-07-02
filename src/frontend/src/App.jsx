@@ -27,6 +27,16 @@ function App() {
   const [history, setHistory] = useState([]);
   const [error, setError] = useState(null);
   const latestGraphPathRef = useRef('');
+  const eventSourceRef = useRef(null);
+
+  // Cleanup SSE on unmount
+  useEffect(() => {
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close();
+      }
+    };
+  }, []);
 
   const fetchGlobalHistory = useCallback(async () => {
     try {
@@ -178,7 +188,13 @@ function App() {
     url.searchParams.append('max_depth', SEARCH_MAX_DEPTH);
     url.searchParams.append('mode', SEARCH_MODE);
 
+    // Close any previous SSE connection to prevent memory leaks
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+
     const eventSource = new EventSource(url.toString());
+    eventSourceRef.current = eventSource;
 
     eventSource.addEventListener('progress', (e) => {
       const data = JSON.parse(e.data);
@@ -209,6 +225,9 @@ function App() {
         setGraphData({ nodes: [], links: [] });
       }
       eventSource.close();
+      if (eventSourceRef.current === eventSource) {
+        eventSourceRef.current = null;
+      }
       setLoading(false);
       setProgress(null);
     });
@@ -217,6 +236,9 @@ function App() {
       setError('Đã xảy ra lỗi khi kết nối server.');
       console.error("EventSource error:", e);
       eventSource.close();
+      if (eventSourceRef.current === eventSource) {
+        eventSourceRef.current = null;
+      }
       setLoading(false);
       setProgress(null);
     });
