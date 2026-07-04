@@ -38,18 +38,32 @@ npm run dev
 ```
 Frontend sẽ chạy tại: `http://localhost:5173`
 
-## Chạy toàn bộ dự án bằng Docker Compose
+## Chạy toàn bộ dự án bằng Docker Compose (Production Setup)
 
-Từ thư mục gốc repository:
+Hệ thống được cấu hình chạy Production với Nginx làm cổng đảo ngược (Reverse Proxy), định tuyến luồng dữ liệu thời gian thực (SSE) và phục vụ trực tiếp file tĩnh của React Frontend.
 
-```bash
-docker compose up --build
-```
+Từ thư mục gốc repository, thực thi các lệnh sau:
 
-Các service sẽ chạy tại:
-- Frontend: `http://localhost:5173`
-- Backend API: `http://localhost:8000`
-- Redis: `localhost:6379`
+1. **Khởi chạy hệ thống**:
+   ```bash
+   docker compose up -d --build
+   ```
+
+2. **Kiểm tra trạng thái các service mạng**:
+   ```bash
+   docker compose ps
+   ```
+
+3. **Theo dõi log backend thời gian thực**:
+   ```bash
+   docker compose logs -f backend
+   ```
+
+Các dịch vụ sẽ chạy tại:
+- **Frontend & API Gateway**: `http://localhost` (Cổng 80 phục vụ React và chuyển tiếp `/api` an toàn).
+- **Backend API thực tế**: `http://localhost/api/` (Định tuyến nội bộ tới `backend:8000`).
+- **Luồng dữ liệu thời gian thực (SSE)**: `http://localhost/api/search/stream` (Bật truyền dẫn trực tiếp, không đệm buffer).
+- **Redis Cache**: Chạy nội bộ phục vụ backend, được kiểm tra trạng thái sức khỏe (Healthcheck) trước khi khởi động ứng dụng.
 
 ## Cách sử dụng
 1. Tìm Wikidata ID của hai người bạn muốn liên kết (ví dụ: `Q34660` cho J.K. Rowling).

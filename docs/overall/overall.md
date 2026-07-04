@@ -12,11 +12,12 @@ Luồng xử lý từ lúc người dùng nhập thông tin đến khi hiển th
 1. **Gợi ý & Nhập liệu (Input):** Người dùng nhập tên của thực thể bắt đầu và thực thể kết thúc. Frontend sẽ gọi API `/api/suggest` (thông qua `suggestion_service.py`) tới Wikidata để tự động hiển thị gợi ý và map tên văn bản thành **Wikidata ID** (VD: `Q34660`).
 2. **Kích hoạt tìm kiếm:** Khi nhấn "Tìm kiếm", Frontend sẽ mở một kết nối **Server-Sent Events (SSE)** tới Backend (`/api/search/...`).
 3. **Kiểm tra Cache:** Backend nhận ID, trước tiên kiểm tra trong **Redis Cache** (hoặc `file_cache.py`) xem đường đi giữa 2 ID này đã được tính toán trong quá khứ chưa. Nếu có, dữ liệu được trả về ngay.
-4. **Thực thi BFS (Xử lý Đồ thị):** Nếu chưa có cache, `path_service.py` sẽ khởi chạy thuật toán BFS qua `bfs_service.py`. 
-   - Hệ thống liên tục gửi các truy vấn SPARQL (`neighbor_wikidata.py`) để lấy tất cả các láng giềng (neighbor) của các node ở độ sâu hiện tại.
+4. **Thực thi BFS Bất Đồng Bộ (Xử lý Đồ thị):** Nếu chưa có cache, `path_service.py` hoặc `routes.py` sẽ khởi chạy thuật toán BFS bất đồng bộ (`find_path` async generator) qua `bfs_service.py`. 
+   - Hệ thống liên tục gửi các truy vấn SPARQL (`neighbor_wikidata.py`) để lấy tất cả các láng giềng (neighbor) của các node ở độ sâu hiện tại, thực hiện qua `asyncio.to_thread` để không chặn Event Loop.
    - Trong quá trình này, backend liên tục `yield` (đẩy) tiến trình (Progress) về Frontend thông qua SSE để người dùng biết thuật toán đang quét bao nhiêu node.
-5. **Chuẩn hóa & Lưu Cache:** Khi tìm được đường đi ngắn nhất hoặc hết giới hạn tìm kiếm, dữ liệu thô sẽ được đưa qua `normalize.py` để format thành danh sách `nodes` và `links`. Kết quả này được lưu vào Redis để dùng cho lần sau.
-6. **Render Giao Diện (Output):** Frontend nhận dữ liệu JSON hoàn chỉnh, sử dụng component `Graph.jsx` (thư viện `react-force-graph-2d`) để vẽ đồ họa 2D minh họa cho đường đi này.
+   - Khi client ngắt kết nối giữa chừng, FastAPI phát hiện qua `request.is_disconnected()` và đóng generator BFS (`bfs_gen.aclose()`), kích hoạt khối `finally` dọn dẹp các hàng đợi lập tức để chống rò rỉ tài nguyên.
+5. **Rút Gọn Payload & Lưu Cache:** Khi tìm được đường đi ngắn nhất, dữ liệu thô sẽ được đưa qua hàm `minimize_graph_payload` trong `normalize.py` để chỉ giữ lại các trường tối giản cho đồ thị phẳng (`nodes` chứa `id`/`name` và `links` chứa `source`/`target`/`p_label`). Kết quả này được lưu vào Redis để dùng cho lần sau.
+6. **Render Giao Diện (Output):** Frontend nhận dữ liệu JSON hoàn chỉnh đã được phân giải sẵn nhãn thực thể và quan hệ, sử dụng component `Graph.jsx` (thư viện `react-force-graph-2d`) để vẽ đồ họa 2D minh họa cho đường đi này cực kỳ mượt mà.
 
 ---
 
@@ -65,8 +66,9 @@ Các API này được host bởi FastAPI tại `/api` và giao tiếp qua HTTP/
     - Timeout cho mỗi lệnh SPARQL: 12 giây.
 
 - **`GET /api/search/stream`**: Endpoint quan trọng nhất sử dụng cơ chế Server-Sent Events (`sse-starlette`). 
-  - Trong quá trình quét đồ thị sử dụng cấu trúc **Bi-directional BFS (Tìm kiếm theo chiều rộng 2 chiều)** từ hai đầu, backend liên tục `yield` gói tin JSON thời gian thực về frontend: `{"event": "progress", "data": {"node_id": "...", "total_explored": 120, "current_depth": 2, "elapsed_seconds": 1.5}}`. Frontend nhận và vẽ log ngay lập tức.
-  - Khi hoàn tất luồng BFS, gửi event `complete` kèm mảng dữ liệu path JSON, hoặc event `error` nếu rớt mạng.
+  - Khởi tạo và lặp bất đồng bộ qua async generator `find_path(...)`. Trong quá trình quét đồ thị sử dụng cấu trúc **Bi-directional BFS (Tìm kiếm theo chiều rộng 2 chiều)** từ hai đầu, backend liên tục `yield` gói tin JSON tiến độ thời gian thực về frontend.
+  - Khi hoàn tất, backend tự động gọi `minimize_graph_payload(...)` để thu gọn cấu trúc phẳng (`nodes` gồm `id` và `name`, `links` gồm `source`, `target` và `p_label`) gửi qua event `complete` để frontend chỉ việc vẽ mà không cần tự gọi thêm API Wikidata để phân giải nhãn thực thể.
+  - Kiểm soát kết nối mạng thực tế qua `await request.is_disconnected()`. Nếu client disconnect, generator tự động dừng và đóng generator BFS (`bfs_gen.aclose()`), kích hoạt khối `finally` dọn dẹp các queue để chống rò rỉ bộ nhớ.
 
 - **`GET /api/suggestions?q={text}&limit={n}`**: API Auto-complete tên sang QID. Gộp dữ liệu từ lịch sử tìm kiếm cục bộ (history in Redis) và lệnh search Action API lên Wikidata. Output Format JSON: `[{"qid": "...", "label": "...", "description": "...", "source": "history|wikidata"}]`.
 
@@ -80,33 +82,28 @@ Backend đóng vai trò là một Agent Client truy xuất trực tiếp dữ li
 - **Wikidata SPARQL Endpoint** (`https://query.wikidata.org/sparql`): 
   - Backend bắn câu truy vấn SPARQL ở tần suất cao qua script `neighbor_wikidata.py`. 
   - Query được tối ưu tối đa bằng toán tử `UNION`: Quét song song trường hợp Node hiện tại đóng vai trò là Chủ thể (`wd:QID ?p ?neighbor`) HOẶC Tân ngữ (`?neighbor ?p wd:QID`).
-  - Code sử dụng string manipulation: `FILTER(STRSTARTS(STR(?neighbor), "http://www.wikidata.org/entity/Q"))` để "ép" kết quả trả về chỉ là QID (những thực thể chuẩn, loại bỏ các kết nối rác như file hình ảnh, link ngoài, năm sinh dạng chuỗi).
+  - Sử dụng bộ lọc tối ưu hóa RDF Index: `FILTER(isURI(?neighbor))` thay thế cho bộ lọc chuỗi cũ `STRSTARTS` nhằm tăng tốc độ truy vấn, giảm nguy cơ dính lỗi HTTP 429 và Timeout.
 
-- **Wikidata Action API** (`wbsearchentities` / `wbgetentities`): Giao tiếp qua HTTP REST (sử dụng thư viện `requests` trong `wikidata_client.py`) phục vụ việc dịch văn bản người dùng gõ (ví dụ "Harry Potter") sang ID Wikidata ("Q8337") kèm theo description.
+- **Wikidata Action API** (`wbsearchentities` / `wbgetentities`): Giao tiếp qua HTTP REST (sử dụng thư viện `requests` trong `wikidata_client.py`) phục vụ việc dịch văn bản người dùng gõ sang ID Wikidata kèm theo description.
 
 ### 5.3. External Tools & Caching Architecture
-- **Redis In-Memory Database**: "Trái tim" bộ nhớ đệm chạy tại port 6379, được gọi thông qua package `redis-py` trong `redis.py`:
-  - **Neighbors Cache:** Node láng giềng được lưu cache tại Key format `neighbors:{wikidata_id}:{limit}` với TTL sống 48 tiếng (172800s). Giúp giải quyết triệt để lỗi chặn Rate Limit 429 từ Wikidata API khi BFS mở rộng hàng ngàn node.
-  - **Path Cache:** Lộ trình đường đi (short-path) được lưu tại Key format `path:{start}:{target}:{mode}:{depth}` với TTL 24 tiếng (86400s).
-  - **LIFO History Queue:** Danh sách tìm kiếm lưu tại key `global_history` dưới cấu trúc mảng (`lrange 0 -1`), mỗi lần có thêm dữ liệu nó sẽ được chèn bằng `LPUSH` và cắt rác bằng `LTRIM 0 19`.
-  - *Cơ chế Fallback*: Khi Redis offline hay restart, các hàm cache trong `redis.py` được bọc try-except tự động bắt `ConnectionError` và fallback thẳng về sử dụng biến in-memory dictionary gốc của Python (`_memory_cache`), đảm bảo ứng dụng không chết.
-- **react-force-graph-2d / d3-force**: Thư viện đồ họa cốt lõi phía Client. Tự động dàn trang Node nhờ một hệ thống "thuật toán mô phỏng vật lý" mạnh mẽ (Mô phỏng 2 lực: lực đẩy từ trường (repulsion) giữa các Node và lực đàn hồi lò xo (spring) kéo giãn các đường Links) khiến cho đồ họa 2D hiển thị tự do bay lơ lửng và luôn đạt trạng thái cân bằng.
+- **Redis In-Memory Database**: "Trái tim" bộ nhớ đệm chạy tại port 6379, được gọi thông qua package `redis-py` trong `redis.py`.
+- **Nginx Reverse Proxy**: Đứng trước backend để quản lý SSL/TLS termination, cân bằng tải (load balancing) cho các luồng SSE dài, và chặn các request bất thường từ client.
 
 ---
 
-## 6. Thuật Toán Tìm Kiếm Cốt Lõi (Bi-directional BFS)
+## 6. Thuật Toán Tìm Kiếm Cốt Lõi (Async Bi-directional BFS)
 
-Trái tim của hệ thống là thuật toán **Tìm kiếm theo chiều rộng 2 chiều (Bi-directional Breadth-First Search)** được triển khai chặt chẽ trong `bfs_service.py`. Tại sao không dùng BFS 1 chiều thông thường? Vì đồ thị Wikidata là một mạng lưới khổng lồ (với hàng chục triệu node và tỷ cạnh), việc quét 1 chiều từ A -> B sẽ tạo ra sự bùng nổ tổ hợp (combinatorial explosion) dẫn đến quá tải bộ nhớ rất nhanh.
+Trái tim của hệ thống là thuật toán **Tìm kiếm theo chiều rộng 2 chiều bất đồng bộ (Async Bi-directional Breadth-First Search)** được triển khai chặt chẽ trong `bfs_service.py`. Tại sao không dùng BFS 1 chiều thông thường? Vì đồ thị Wikidata là một mạng lưới khổng lồ (với hàng chục triệu node và tỷ cạnh), việc quét 1 chiều từ A -> B sẽ tạo ra sự bùng nổ tổ hợp (combinatorial explosion) dẫn đến quá tải bộ nhớ rất nhanh.
 
 Cơ chế hoạt động chi tiết của thuật toán:
 1. **Khởi tạo 2 hàng đợi (Queues):** `forward_queue` bắt đầu từ `start_id` và `backward_queue` bắt đầu từ `target_id` (sử dụng `collections.deque` để tối ưu O(1) thao tác popleft). Đi kèm là 2 từ điển (dictionary) để lưu vết đường đi (`forward_parent`, `backward_parent`) và lưu độ sâu (`forward_depth`, `backward_depth`).
 2. **Chiến lược Cân Bằng (Load-balancing):** Ở mỗi vòng lặp `while`, hệ thống kiểm tra và so sánh kích thước của 2 hàng đợi. Nó luôn chọn **hàng đợi có ít node hơn** (`len(forward_queue) <= len(backward_queue)`) để mở rộng (expand). Việc này đảm bảo thuật toán luôn ưu tiên phát triển nhánh đồ thị thưa thớt hơn, tiết kiệm tài nguyên và số lượng lệnh gọi API tối đa.
-3. **Mở rộng theo lớp (Layer Expansion):** Hàm `expand_one_layer` sẽ duyệt toàn bộ các node ở tầng hiện tại trước khi nhảy sang tầng tiếp theo. Với mỗi node được bốc ra (`queue.popleft()`), hệ thống sẽ gọi `get_neighbors()` (bắn SPARQL) để tìm các nhánh tiếp theo. Đồng thời tại đây, một `yield` event thông qua cơ chế SSE được bắn về Frontend để đẩy thanh tiến độ (Progress bar).
-4. **Cơ chế Hội Ngộ (Meeting Point):** Nếu một node láng giềng vừa tìm được ở nhánh này đã nằm sẵn trong `parent_dict` của nhánh bên kia (nghĩa là `neighbor in other_parent`), và tổng độ sâu (`depth + other_depth`) nhỏ hơn hoặc bằng `max_depth` cho phép, thì hệ thống xác định **Điểm Hội Ngộ** đã được tìm thấy và lập tức dừng duyệt.
+3. **Mở rộng theo lớp & Yield Progress:** Hàm `expand_one_layer` được định nghĩa là một sub-generator async. Khi duyệt qua mỗi node được bốc ra (`queue.popleft()`), hệ thống sẽ `yield` tiến độ và gọi `asyncio.to_thread(get_neighbors, current)` chạy query Wikidata SPARQL trong thread pool để tránh block Event Loop.
+4. **Cơ chế Hội Ngộ (Meeting Point):** Nếu một node láng giềng vừa tìm được ở nhánh này đã nằm sẵn trong `parent_dict` của nhánh bên kia (nghĩa là `neighbor in other_parent`), và tổng độ sâu (`depth + other_depth`) nhỏ hơn hoặc bằng `max_depth` cho phép, thì hệ thống xác định **Điểm Hội Ngộ** đã được tìm thấy và lập tức trả kết quả.
 5. **Dựng lại đường đi (Path Reconstruction):** Hàm nội bộ `_build_path` sẽ đi ngược (gỡ băng) từ điểm hội ngộ về điểm xuất phát thông qua `forward_parent` và từ điểm hội ngộ về đích thông qua `backward_parent`. Cả 2 mảng được ghép lại tạo thành chuỗi liên kết hoàn chỉnh từ đầu đến cuối.
-6. **Failsafes (Bảo vệ Server):** Hàm `enforce_limits()` chèn ở khắp mọi nơi trong thân vòng lặp, có nhiệm vụ "bóp cò" chặn đứng quá trình quét ném ra Exception `SearchLimitReached` nếu: 
-   - Tổng số node mở rộng đã chạm trần (vd: 15.000 nodes).
-   - Tổng thời gian chạy đã chạm trần (vd: 12 giây).
+6. **Hủy Bỏ An Toàn (Finally Garbage Collection):** Bọc toàn bộ thuật toán trong khối `try ... finally`. Khi generator bị đóng bằng `.aclose()` do client ngắt kết nối (FastAPI kích hoạt `GeneratorExit`), khối `finally` sẽ luôn chạy và gọi `clear()` trên toàn bộ queues và parent maps, giải phóng bộ nhớ RAM lập tức để chống OOM.
+7. **Failsafes (Bảo vệ Server):** Hàm `enforce_limits()` chèn ở khắp mọi nơi trong thân vòng lặp, có nhiệm vụ "bóp cò" chặn đứng quá trình quét ném ra Exception `SearchLimitReached` nếu tổng số node mở rộng đã chạm trần hoặc tổng thời gian chạy đã vượt quá ngưỡng cho phép.
 
 ---
 
@@ -120,7 +117,7 @@ Cơ chế hoạt động chi tiết của thuật toán:
 - **CSS thuần / UI UX:** Xử lý Dark mode và animation.
 
 ### **Backend:**
-- **Python (3.9+):** Ngôn ngữ chính xử lý logic.
+- **Python (3.11+):** Ngôn ngữ chính xử lý logic.
 - **FastAPI & Uvicorn:** Framework Web hiệu năng cực cao, hỗ trợ tốt luồng bất đồng bộ (async).
 - **sse-starlette:** Thư viện hỗ trợ truyền phát Server-Sent Events cho việc cập nhật realtime progress.
 - **Requests:** Thư viện gọi HTTP request (thường là gọi Wikidata SPARQL endpoint).
@@ -128,7 +125,7 @@ Cơ chế hoạt động chi tiết của thuật toán:
 - **Redis (redis-py):** Tương tác với cơ sở dữ liệu in-memory Redis.
 
 ### **Hạ tầng & Nguồn Dữ Liệu:**
-- **Docker & Docker Compose:** Container hóa các dịch vụ để có thể chạy dễ dàng bằng một lệnh (Frontend, Backend, Redis database).
+- **Docker & Docker Compose:** Container hóa các dịch vụ để có thể chạy dễ dàng bằng một lệnh (Frontend, Backend, Redis database) thông qua Nginx Reverse Proxy.
 - **Wikidata API & SPARQL:** Nguồn dữ liệu tri thức khổng lồ mở.
 
 ---
@@ -139,16 +136,26 @@ Dưới đây là cấu trúc cây thư mục phản ánh rõ kiến trúc Clien
 
 ```text
 name-related-searching/
-├── docker-compose.yml          # Tệp cấu hình chạy đồng thời Frontend, Backend và Redis bằng Docker
+├── docker-compose.yml          # Tệp cấu hình chạy đồng thời các container (Frontend, Backend, Redis, Nginx)
 ├── README.md                   # Tài liệu hướng dẫn cài đặt và thông tin tóm tắt dự án
+├── docker/                     # Thư mục cấu hình hạ tầng Production
+│   └── nginx/
+│       └── nginx.conf          # Cấu hình Nginx Gateway (SSE, SPA Routing, API Reverse Proxy)
 ├── docs/                       # Thư mục chứa tài liệu mô tả hệ thống (Markdown)
-├── overall.md                  # Tài liệu tổng quan kiến trúc (File này)
+│   └── overall/                # Thư mục tài liệu tổng quan
+│       ├── overall.md          # Tài liệu tổng quan kiến trúc (File này)
+│       └── project_assessment.md # Tài liệu đánh giá dự án chuyên sâu
+├── scripts/                    # Thư mục chứa các kịch bản kiểm thử, vận hành tự động
+│   └── validation/             # Bộ kịch bản xác minh hệ thống tự động
+│       ├── windows/            # Các script PowerShell dành cho Windows Host
+│       └── docker/             # Các script Bash dành cho Docker/Linux
 └── src/                        # Thư mục gốc chứa Source Code của hệ thống
     │
     ├── frontend/               # MÃ NGUỒN FRONTEND (Web Client)
     │   ├── package.json        # Chứa thông tin cấu hình npm, dependencies của React
     │   ├── vite.config.js      # Cấu hình đóng gói cho Vite
     │   ├── index.html          # Điểm vào HTML gốc của ứng dụng
+    │   ├── nginx.conf          # Cấu hình Nginx tối ưu phục vụ React tĩnh
     │   └── src/                # Logic code Frontend
     │       ├── main.jsx        # Điểm vào (Entry point) khởi tạo root của React
     │       ├── App.jsx         # Component gốc chứa layout, quản lý trạng thái search và xử lý logic kết nối
@@ -183,3 +190,15 @@ name-related-searching/
                 ├── input_utils.py       # Module kiểm tra định dạng và trích xuất (parse) đầu vào của user
                 └── graph_config.py      # Định nghĩa các hằng số, filter property bỏ qua cho đồ thị
 ```
+
+---
+
+## 9. Bộ Kịch Bản Kiểm Thử & Xác Minh Hệ Thống (System Validation Suite)
+
+Dự án tích hợp bộ kịch bản tự động hóa trong thư mục `scripts/validation/` để xác minh độ ổn định và chất lượng hệ thống trên cả Windows Host cục bộ và Docker container:
+
+* **Kiểm tra cú pháp (`check_syntax.ps1` / `.sh`):** Quét lỗi biên dịch python và chạy Ruff linter cho backend, ESLint cho frontend.
+* **Bộ Unit Test Fail-Fast (`run_unit_tests.ps1` / `.sh`):** Khởi chạy pytest suite với cờ exit-first `-x` và đo đạc thời gian chạy test (`--durations=5`).
+* **Đánh giá rò rỉ SSE (`detect_sse_leaks.ps1` / `.sh`):** Tự động mô phỏng client ngắt kết nối SSE đột ngột để kiểm tra rò rỉ số luồng (threads) của Backend và socket outbound tới cổng 443 Wikidata.
+* **Stress Test RAM & Kết nối Redis (`stress_memory.ps1` / `.sh`):** Giả lập tạm dừng (pause) Redis container và sử dụng `autocannon` tạo tải giả lập để xác nhận giới hạn RAM của `BoundedLRUCache` (50,000 nodes).
+* **SPARQL Performance Benchmark (`benchmark_sparql.ps1` / `.sh`):** Đo đạc thời gian phản hồi thực tế của Wikidata SPARQL endpoint đối với câu truy vấn cũ và mới, loại bỏ CDN Cache bằng cờ `no-cache` và các tham số ngẫu nhiên.
