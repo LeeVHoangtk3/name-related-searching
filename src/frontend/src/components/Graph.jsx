@@ -1,20 +1,69 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 import { NODE_RADIUS } from '../lib/graphData';
 
-// Thành phần hiển thị đồ thị liên kết sử dụng react-force-graph
 // Component to display connection graph using react-force-graph
 const ConnectionGraph = ({ data }) => {
+  const fgRef = useRef();
+
+  useEffect(() => {
+    if (!fgRef.current || !data || !data.nodes) return;
+    const fg = fgRef.current;
+
+    if (data.nodes.length > 100) {
+      // Assign clusters based on the last digit of QID
+      data.nodes.forEach(node => {
+        const qidNum = parseInt(node.id.substring(1)) || 0;
+        node.cluster = qidNum % 10; // 10 clusters
+      });
+
+      // Simple cluster centers in 2D space
+      const clusterCenters = {
+        0: { x: -120, y: -120 },
+        1: { x: 0, y: -180 },
+        2: { x: 120, y: -120 },
+        3: { x: -180, y: 0 },
+        4: { x: 0, y: 0 },
+        5: { x: 180, y: 0 },
+        6: { x: -120, y: 120 },
+        7: { x: 0, y: 180 },
+        8: { x: 120, y: 120 },
+        9: { x: 50, y: -50 }
+      };
+
+      // Enforce D3 structural node grouping (clustering force)
+      fg.d3Force('cluster', (alpha) => {
+        data.nodes.forEach(node => {
+          const center = clusterCenters[node.cluster] || { x: 0, y: 0 };
+          node.vx += (center.x - node.x) * 0.08 * alpha;
+          node.vy += (center.y - node.y) * 0.08 * alpha;
+        });
+      });
+
+      // Reduce repulsion force to make clusters stable and smooth
+      fg.d3Force('charge').strength(-30);
+      fg.d3Force('link').distance(40);
+    } else {
+      // Restore default physics for small graphs
+      fg.d3Force('cluster', null);
+      fg.d3Force('charge').strength(-120);
+      fg.d3Force('link').distance(60);
+    }
+  }, [data]);
+
+  const isLargeGraph = data?.nodes?.length > 100;
+
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <ForceGraph2D
+        ref={fgRef}
         graphData={data}
         nodeLabel={(node) => `${node.name} (${node.id})`}
         nodeColor={() => '#bb86fc'}
         linkColor={() => '#03dac6'}
         linkDirectionalArrowLength={3.5}
         linkDirectionalArrowRelPos={1}
-        cooldownTicks={100} // Limit simulation run calculations
+        cooldownTicks={isLargeGraph ? 50 : 100} // Limit simulation run calculations for large graph
         nodeCanvasObject={(node, ctx, globalScale) => {
           // Draw node circle
           ctx.beginPath();
@@ -22,10 +71,10 @@ const ConnectionGraph = ({ data }) => {
           ctx.fillStyle = '#bb86fc';
           ctx.fill();
 
-          // Only render text label details when zoomed in close enough (globalScale >= 1.5)
-          if (globalScale >= 1.5) {
+          // Only render text label details when zoomed in close enough or on small graphs
+          if (globalScale >= 1.5 || !isLargeGraph) {
             const label = node.name || node.id;
-            const fontSize = 14 / globalScale;
+            const fontSize = isLargeGraph ? (10 / globalScale) : (14 / globalScale);
             ctx.font = `${fontSize}px Inter, sans-serif`;
             const textWidth = ctx.measureText(label).width;
             const bckgDimensions = [textWidth, fontSize].map((dimension) => dimension + fontSize * 0.55);
@@ -41,7 +90,6 @@ const ConnectionGraph = ({ data }) => {
             ctx.fillText(label, node.x, node.y);
           }
         }}
-        // Hiệu ứng di chuột vào node
         onNodeHover={(node) => {
           document.body.style.cursor = node ? 'pointer' : null;
         }}

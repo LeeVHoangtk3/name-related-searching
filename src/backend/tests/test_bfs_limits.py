@@ -1,7 +1,7 @@
 import unittest
 import time
 
-from app.services.bfs_service import find_path
+from app.services.bfs_service import find_path_sync
 
 
 class BfsLimitTests(unittest.TestCase):
@@ -11,7 +11,7 @@ class BfsLimitTests(unittest.TestCase):
                 return []
             return [f"{node}a", f"{node}b", f"{node}c"]
 
-        path = find_path(
+        path = find_path_sync(
             start="S",
             target="TARGET",
             get_neighbors=neighbors,
@@ -32,7 +32,7 @@ class BfsLimitTests(unittest.TestCase):
         def neighbors(node):
             return graph.get(node, [])
 
-        path = find_path(
+        path = find_path_sync(
             start="A",
             target="D",
             get_neighbors=neighbors,
@@ -50,7 +50,7 @@ class BfsLimitTests(unittest.TestCase):
             return []
 
         started_at = time.monotonic()
-        path = find_path(
+        path = find_path_sync(
             start="S",
             target="T",
             get_neighbors=neighbors,

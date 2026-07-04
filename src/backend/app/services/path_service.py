@@ -2,7 +2,7 @@ from typing import Optional, List, Dict, Callable
 import requests
 import time
 
-from app.services.bfs_service import find_path
+from app.services.bfs_service import find_path_sync
 from app.services.neighbor_wikidata import get_neighbors, get_entity_type
 from app.services.file_cache import get_cache, set_cache, load_cache, save_cache
 from app.services.graph_config import ALLOWED_HUB_CLASSES
@@ -113,8 +113,8 @@ def find_path_cached(
         # It might be the old format (List[str]) which is what we expect
         return resolve_labels(cached_path_qids)
 
-    # find_path returns List[str]
-    path_qids = find_path(start_qid, target_qid, get_neighbors, max_depth)
+    # find_path_sync returns List[str]
+    path_qids = find_path_sync(start_qid, target_qid, get_neighbors, max_depth)
     
     if path_qids:
         set_cache("paths.json", cache_key, path_qids)
@@ -208,7 +208,7 @@ def find_path_bidirectional(
 
     heuristic_fetcher = make_heuristic_neighbor_fetcher(target_qid, get_neighbors)
 
-    path_qids = find_path(
+    path_qids = find_path_sync(
         start=start_qid,
         target=target_qid,
         get_neighbors=heuristic_fetcher,

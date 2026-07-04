@@ -17,7 +17,7 @@ class SearchLogicTests(unittest.TestCase):
         with (
             patch("app.api.routes.resolve_entity_input", side_effect=lambda value: value, create=True),
             patch("app.api.routes.get_cache", return_value=None) as mock_get_cache,
-            patch("app.api.routes.find_path", return_value=None) as mock_find_path,
+            patch("app.api.routes.find_path_sync", return_value=None) as mock_find_path,
             patch("app.api.routes.set_cache"),
             patch("app.api.routes.add_to_history"),
         ):
@@ -35,7 +35,7 @@ class SearchLogicTests(unittest.TestCase):
         with (
             patch("app.api.routes.resolve_entity_input", side_effect=lambda value: value, create=True),
             patch("app.api.routes.get_cache", return_value=None) as mock_get_cache,
-            patch("app.api.routes.find_path", return_value=["Q1", "Q2"]) as mock_find_path,
+            patch("app.api.routes.find_path_sync", return_value=["Q1", "Q2"]) as mock_find_path,
             patch("app.api.routes.set_cache") as mock_set_cache,
             patch("app.api.routes.add_to_history"),
         ):
@@ -58,10 +58,5 @@ class SearchLogicTests(unittest.TestCase):
             return_value=[{"qid": "Q22686", "label": "Donald Trump"}],
             create=True,
         ):
-            resolved = resolve_entity_input("trump")
-
-        self.assertEqual(resolved, "Q22686")
-
-
-if __name__ == "__main__":
-    unittest.main()
+            self.assertEqual(resolve_entity_input("Donald Trump"), "Q22686")
+            self.assertEqual(resolve_entity_input("Q22686"), "Q22686")

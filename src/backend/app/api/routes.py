@@ -1,16 +1,16 @@
 import re
-import asyncio
 import json
 from functools import partial
 from typing import AsyncGenerator
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from sse_starlette.sse import EventSourceResponse
 from app.clients.wikidata import wikidata_client
-from app.services.bfs_service import find_path
+from app.services.bfs_service import find_path, find_path_sync
 from app.services.neighbor_wikidata import get_neighbors
 from app.services.suggestion_service import get_name_suggestions
 from app.core.redis import get_cache, set_cache, add_to_history, get_history
+from app.services.normalize import minimize_graph_payload
 
 router = APIRouter()
 QID_PATTERN = re.compile(r"^Q\d+$", re.IGNORECASE)
@@ -98,7 +98,7 @@ def search_path(
             return {"status": "success", "path": cached_path, "source": "cache"}
 
         # 2. Nếu không có cache, thực hiện BFS
-        path = find_path(
+        path = find_path_sync(
             start=start_id,
             target=target_id,
             get_neighbors=neighbor_fetcher,
@@ -120,8 +120,6 @@ def search_path(
         return {"status": "success", "path": path, "source": "api"}
     except HTTPException:
         raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/search/stream")
 async def search_path_stream(
@@ -129,6 +127,7 @@ async def search_path_stream(
     target: str = Query(..., description="Wikidata ID của người đích"),
     max_depth: int = Query(8, ge=1, le=10, description="Độ sâu tìm kiếm tối đa"),
     mode: str = Query("fast", pattern="^(fast|deep)$", description="Chế độ tìm kiếm: fast hoặc deep"),
+    request: Request = None,
 ):
     """
     SSE stream version of search_path to provide real-time progress updates.
@@ -150,58 +149,70 @@ async def search_path_stream(
         cached_path = get_cache(cache_key)
         if cached_path:
             add_to_history(start_id, target_id)
+            # Tối ưu hóa: Rút gọn dữ liệu phẳng trả về
+            graph_payload = minimize_graph_payload(cached_path)
             yield {
                 "event": "complete",
-                "data": json.dumps({"status": "success", "path": cached_path, "source": "cache"})
+                "data": json.dumps({"status": "success", "graph": graph_payload, "source": "cache"})
             }
             return
 
-        queue = asyncio.Queue()
-        loop = asyncio.get_running_loop()
+        # 2. Tạo generator async BFS
+        bfs_gen = find_path(
+            start=start_id,
+            target=target_id,
+            get_neighbors=neighbor_fetcher,
+            max_depth=effective_depth,
+            max_nodes=max_nodes,
+        )
 
-        def on_progress_callback(update_data: dict):
-            # This runs in the BFS thread, use the captured loop to put in the queue
-            print(f"[PROGRESS] {update_data['node_id']} | Total: {update_data['total_explored']}")
-            loop.call_soon_threadsafe(queue.put_nowait, {"event": "progress", "data": json.dumps(update_data)})
+        try:
+            async for update in bfs_gen:
+                # Kiểm tra client disconnect định kỳ
+                if request is not None and await request.is_disconnected():
+                    print("[INFO] Client disconnected. Aborting BFS.")
+                    break
 
-        def run_bfs():
-            try:
-                print(f"[INFO] Starting BFS from {start_id} to {target_id}")
-                path = find_path(
-                    start=start_id,
-                    target=target_id,
-                    get_neighbors=neighbor_fetcher,
-                    max_depth=effective_depth,
-                    max_nodes=max_nodes,
-                    on_progress=on_progress_callback
-                )
-                
-                if path:
-                    print(f"[INFO] BFS Found path: {' -> '.join(path)}")
+                if update["type"] == "progress":
+                    yield {
+                        "event": "progress",
+                        "data": json.dumps({
+                            "node_id": update["node_id"],
+                            "total_explored": update["total_explored"],
+                            "current_depth": update["current_depth"],
+                            "elapsed_seconds": update["elapsed_seconds"]
+                        })
+                    }
+                elif update["type"] == "complete":
+                    path = update["path"]
                     set_cache(cache_key, path)
                     add_to_history(start_id, target_id)
-                    result = {"status": "success", "path": path, "source": "api"}
-                else:
-                    print("[INFO] BFS No path found.")
-                    result = {"status": "no_path", "path": [], "mode": mode}
+                    # Tối ưu hóa: Rút gọn dữ liệu phẳng trả về
+                    graph_payload = minimize_graph_payload(path)
+                    yield {
+                        "event": "complete",
+                        "data": json.dumps({"status": "success", "graph": graph_payload, "source": "api"})
+                    }
+                    return
+                elif update["type"] == "no_path":
+                    result = {
+                        "status": "no_path", 
+                        "graph": {"nodes": [], "links": []}, 
+                        "mode": mode
+                    }
                     if mode == "fast":
                         result["suggestion"] = "Retry with mode=deep for broader search."
-                
-                loop.call_soon_threadsafe(queue.put_nowait, {"event": "complete", "data": json.dumps(result)})
-            except Exception as e:
-                print(f"[ERROR] BFS Error: {e}")
-                loop.call_soon_threadsafe(queue.put_nowait, {"event": "error", "data": json.dumps({"detail": str(e)})})
-
-        # Start BFS in a separate thread
-        bfs_task = loop.run_in_executor(None, run_bfs)
-
-        while True:
-            event = await queue.get()
-            yield event
-            if event["event"] in ["complete", "error"]:
-                break
-        
-        await bfs_task
+                    yield {
+                        "event": "complete",
+                        "data": json.dumps(result)
+                    }
+                    return
+        except GeneratorExit:
+            print("[INFO] SSE stream generator exit (GeneratorExit). Closing BFS generator.")
+            raise
+        finally:
+            # Đóng generator BFS để kích hoạt khối finally giải phóng bộ nhớ bên trong nó
+            await bfs_gen.aclose()
 
     return EventSourceResponse(event_generator())
 
