@@ -22,7 +22,7 @@ COPY --from=builder /root/.local /root/.local
 
 # Copy application source package directly to `/workspace/app`
 # Since PYTHONPATH is /workspace, Python will resolve package imports for `app` to `/workspace/app`.
-COPY app /workspace/app
+COPY ./app ./app
 
 # Set environments
 ENV PATH=/root/.local/bin:$PATH
