@@ -11,7 +11,9 @@ Luồng xử lý từ lúc người dùng nhập thông tin đến khi hiển th
 
 1. **Gợi ý & Nhập liệu (Input):** Người dùng nhập tên của thực thể bắt đầu và thực thể kết thúc. Frontend sẽ gọi API `/api/suggest` (thông qua `suggestion_service.py`) tới Wikidata để tự động hiển thị gợi ý và map tên văn bản thành **Wikidata ID** (VD: `Q34660`).
 2. **Kích hoạt tìm kiếm:** Khi nhấn "Tìm kiếm", Frontend sẽ mở một kết nối **Server-Sent Events (SSE)** tới Backend (`/api/search/...`).
-3. **Kiểm tra Cache:** Backend nhận ID, trước tiên kiểm tra trong **Redis Cache** (hoặc `file_cache.py`) xem đường đi giữa 2 ID này đã được tính toán trong quá khứ chưa. Nếu có, dữ liệu được trả về ngay.
+3. **Kiểm tra Cache & Pre-fetch Hubs:** Backend nhận ID, trước tiên kiểm tra trong **Redis Cache** (hoặc `file_cache.py`) xem đường đi đã được tính toán chưa.
+   - **Đồng bộ Hubs chạy nền**: Khi khởi động Backend, worker chạy nền (`sync_hubs_cache_worker` thông qua lifespan của FastAPI) sẽ tải trước (Pre-fetch) láng giềng của các thực thể chiến lược lớn (`Q5`, `Q30`, `Q571`, `Q11424`, `Q4830453`) và nạp vào Redis (`hub_cache:QID`). Khi BFS mở rộng qua các Hub này, dữ liệu láng giềng được trả về ngay trong `<5ms` thay vì gửi truy vấn mạng SPARQL, giúp tránh lỗi rate-limit (HTTP 429) và timeout (HTTP 504) của Wikidata.
+   - **Phân trang lịch sử**: Bản ghi lịch sử tìm kiếm được lấy qua endpoint `/api/history` áp dụng phân trang động bằng lệnh `LLEN` và `LRANGE` của Redis để tối ưu băng thông.
 4. **Thực thi BFS Bất Đồng Bộ (Xử lý Đồ thị):** Nếu chưa có cache, `path_service.py` hoặc `routes.py` sẽ khởi chạy thuật toán BFS bất đồng bộ (`find_path` async generator) qua `bfs_service.py`. 
    - Hệ thống liên tục gửi các truy vấn SPARQL (`neighbor_wikidata.py`) để lấy tất cả các láng giềng (neighbor) của các node ở độ sâu hiện tại, thực hiện qua `asyncio.to_thread` để không chặn Event Loop.
    - Trong quá trình này, backend liên tục `yield` (đẩy) tiến trình (Progress) về Frontend thông qua SSE để người dùng biết thuật toán đang quét bao nhiêu node.
@@ -184,6 +186,7 @@ name-related-searching/
                 ├── bfs_service.py       # Cài đặt thuật toán duyệt đồ thị BFS trên tập data Wikidata
                 ├── path_service.py      # Điều phối xử lý pathfinding (gọi cache, chạy bfs, gửi sse stream)
                 ├── neighbor_wikidata.py # Xây dựng & gửi câu lệnh truy vấn SPARQL lên hệ thống máy chủ Wikidata
+                ├── cache_syncer.py      # Worker chạy nền đồng bộ trước cache láng giềng của các Wikidata Hubs chiến lược
                 ├── suggestion_service.py# Giao tiếp với hệ thống Search Wikidata để gợi ý ID cho người dùng
                 ├── normalize.py         # Chuyển đổi dữ liệu thô SPARQL về định dạng chuẩn Graph (Nodes, Links)
                 ├── file_cache.py        # Module quản lý cache dựa vào file (Fallback khi mất kết nối Redis)

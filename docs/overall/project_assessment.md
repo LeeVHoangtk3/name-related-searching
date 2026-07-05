@@ -25,7 +25,8 @@ Hệ thống WikiBFS được xây dựng theo kiến trúc Client-Server hiện
 | :--- | :--- | :--- | :--- |
 | **Tìm kiếm BFS hai chiều** | Quét song song từ Start Entity và Target Entity. | **9.5/10** | Thuật toán tối ưu, tự động cân bằng (chọn hàng đợi ngắn hơn để mở rộng), giảm số lượng API gọi đi đáng kể. |
 | **Real-time Progress Stream** | Sử dụng Server-Sent Events (SSE) để truyền dữ liệu trạng thái quét đồ thị về UI. | **9/10** | Hiển thị log thời gian thực mượt mà, giúp người dùng không cảm thấy ứng dụng bị treo khi tìm kiếm sâu. |
-| **Tích hợp Cache Đa Tầng** | Redis Cache (neighbors, paths, history) + Local File Cache fallback. | **9/10** | Tốc độ phản hồi tức thì với các truy vấn cũ (< 50ms). Cơ chế fallback local cache bảo vệ hệ thống không bị crash khi ngắt kết nối Redis. |
+| **Tích hợp Cache Đa Tầng** | Redis Cache (neighbors, paths, history) + Pre-fetch Hub Cache + Local File Cache fallback. | **9.5/10** | Tốc độ phản hồi tức thì với các truy vấn cũ (< 50ms). Cơ chế pre-fetch láng giềng cho Hubs ngăn chặn triệt để lỗi rate limit (HTTP 429) và timeout (HTTP 504) của Wikidata. Cơ chế fallback bảo vệ hệ thống không bị crash khi ngắt kết nối Redis. |
+| **Phân trang lịch sử** | Phân trang danh sách lịch sử tại Database sử dụng `LLEN` và `LRANGE`. | **9/10** | Tránh truyền dữ liệu nguyên khối cồng kềnh, cải thiện băng thông và tăng hiệu năng truy xuất O(1). |
 | **Autocomplete Suggestion** | Wikidata API kết hợp với search history trong Redis. | **8.5/10** | Đầy đủ thông tin mô tả, lọc trùng lặp QID thông minh, thời gian gợi ý nhanh. |
 | **Tương tác Đồ thị 2D** | Vẽ đồ thị physics-based bằng `react-force-graph-2d` và D3. | **8.5/10** | Đồ thị sinh động, hỗ trợ zoom, kéo thả, hiển thị nhãn mối quan hệ rõ ràng. Có thể cải thiện thêm hiệu năng vẽ khi đồ thị > 100 nodes. |
 
