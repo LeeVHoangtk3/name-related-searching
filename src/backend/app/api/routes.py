@@ -1,5 +1,6 @@
 import re
 import json
+import math
 from functools import partial
 from typing import AsyncGenerator
 
@@ -9,7 +10,7 @@ from app.clients.wikidata import wikidata_client
 from app.services.bfs_service import find_path, find_path_sync
 from app.services.neighbor_wikidata import get_neighbors
 from app.services.suggestion_service import get_name_suggestions
-from app.core.redis import get_cache, set_cache, add_to_history, get_history
+from app.core.redis import get_cache, set_cache, add_to_history, get_history, get_history_paginated
 from app.services.normalize import minimize_graph_payload
 
 router = APIRouter()
@@ -217,14 +218,26 @@ async def search_path_stream(
     return EventSourceResponse(event_generator())
 
 @router.get("/history")
-def get_global_history():
+def get_global_history(
+    page: int = Query(1, ge=1, description="Trang hiện tại"),
+    size: int = Query(10, ge=1, le=50, description="Kích thước trang"),
+):
     """
-    Lấy danh sách lịch sử tìm kiếm toàn cục từ Redis.
-    Get global search history from Redis.
+    Lấy danh sách lịch sử tìm kiếm toàn cục từ Redis có phân trang.
+    Get global search history list from Redis with pagination.
     """
     try:
-        history = get_history()
-        return {"history": history}
+        total_items, history = get_history_paginated(page, size)
+        total_pages = math.ceil(total_items / size) if size > 0 else 0
+        return {
+            "metadata": {
+                "total_items": total_items,
+                "current_page": page,
+                "size": size,
+                "total_pages": total_pages
+            },
+            "history": history
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

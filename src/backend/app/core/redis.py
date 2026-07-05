@@ -80,3 +80,20 @@ def get_history():
         return [json.loads(item) for item in items]
     except redis.exceptions.ConnectionError:
         return list(_memory_history)
+
+def get_history_paginated(page: int, size: int):
+    """
+    Lấy danh sách lịch sử tìm kiếm toàn cục có phân trang sử dụng LLEN và LRANGE.
+    Get paginated global search history list using LLEN and LRANGE.
+    """
+    start_index = (page - 1) * size
+    end_index = start_index + size - 1
+    try:
+        total_items = redis_client.llen("global_history")
+        items = redis_client.lrange("global_history", start_index, end_index)
+        history = [json.loads(item) for item in items]
+        return total_items, history
+    except redis.exceptions.ConnectionError:
+        total_items = len(_memory_history)
+        items = _memory_history[start_index:end_index + 1]
+        return total_items, list(items)

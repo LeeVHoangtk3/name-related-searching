@@ -34,6 +34,15 @@ def get_neighbors(
     Lấy danh sách ID của các thực thể lân cận từ Wikidata, có sử dụng Redis cache.
     Get a list of IDs of neighbor entities from Wikidata, using Redis cache.
     """
+    # Chốt chặn kiểm tra Hubs cache để chống rate-limiting và timeouts
+    # Hubs cache gate to prevent rate-limiting and connection timeouts
+    strategic_hubs = {"Q5", "Q30", "Q571", "Q11424", "Q4830453"}
+    if wikidata_id in strategic_hubs:
+        hub_cached = get_cache(f"hub_cache:{wikidata_id}")
+        if hub_cached is not None:
+            print(f"[INFO] Hub Cache Hit for {wikidata_id}")
+            return hub_cached[:limit]
+
     cache_key = f"neighbors:{wikidata_id}:{limit}"
     cached = get_cache(cache_key)
     if cached:
