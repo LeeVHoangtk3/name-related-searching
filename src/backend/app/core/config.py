@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     TIMEOUT: int = 20
     DEFAULT_LIMIT: int = 50
     REDIS_URL: str = "redis://localhost:6379/0"
+    MEMGRAPH_URL: str = "bolt://localhost:7687"
 
     class Config:
         env_file = ".env"

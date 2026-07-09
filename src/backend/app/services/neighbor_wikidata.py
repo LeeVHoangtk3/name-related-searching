@@ -3,22 +3,31 @@ from app.clients.wikidata import wikidata_client
 from app.core.config import settings
 from app.core.redis import get_cache, set_cache
 from app.services.file_cache import get_cache as get_file_cache, set_cache as set_file_cache
+from app.services.graph_config import BLACKLIST_PROPERTIES
 
 def build_neighbor_query(wikidata_id: str, limit: int = settings.DEFAULT_LIMIT) -> str:
     """
     Xây dựng câu truy vấn SPARQL tối ưu để tìm các thực thể lân cận.
     Sử dụng isURI(?neighbor) thay vì STRSTARTS(STR(?neighbor), ...) để tối ưu index.
+    Lọc bỏ các cạnh rác và thuộc tính không mong muốn bằng BLACKLIST_PROPERTIES.
     """
+    blacklist_filter = ""
+    if BLACKLIST_PROPERTIES:
+        blacklist_clause = ", ".join(f"wdt:{prop}" for prop in BLACKLIST_PROPERTIES)
+        blacklist_filter = f"FILTER(?p NOT IN ({blacklist_clause}))"
+
     return f"""
     SELECT DISTINCT ?neighbor WHERE {{
       {{
         wd:{wikidata_id} ?p ?neighbor .
         FILTER(isURI(?neighbor))
+        {blacklist_filter}
       }}
       UNION
       {{
         ?neighbor ?p wd:{wikidata_id} .
         FILTER(isURI(?neighbor))
+        {blacklist_filter}
       }}
       FILTER(?neighbor != wd:{wikidata_id})
     }}

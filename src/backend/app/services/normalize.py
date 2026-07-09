@@ -4,12 +4,29 @@ from typing import List, Dict, Any
 from app.services.file_cache import get_cache, set_cache
 from app.services.input_utils import normalize_input
 from app.clients.wikidata import wikidata_client
+from app.services.graph_config import INVERSE_PROPERTIES
 
 WIKIDATA_SEARCH_API = "https://www.wikidata.org/w/api.php"
 
 HEADERS = {
     "User-Agent": "name-related-searching/0.1 (contact: leviethoangtk3@gmail.com)",
     "Accept": "application/json",
+}
+
+# Fallback nhãn tiếng Anh của các thuộc tính phổ biến
+# Fallback English labels for common properties
+PROPERTY_LABELS_FALLBACK = {
+    "P22": "father",
+    "P25": "mother",
+    "P40": "child",
+    "P26": "spouse",
+    "P3373": "sibling",
+    "P106": "occupation",
+    "P19": "place of birth",
+    "P27": "country of citizenship",
+    "P108": "employer",
+    "P39": "office held",
+    "P69": "educated at",
 }
 
 def normalize_name(name: str, limit: int = 5) -> List[Dict]:
@@ -35,14 +52,11 @@ def normalize_name(name: str, limit: int = 5) -> List[Dict]:
         timeout=15,
     )
 
-    # ❗ Không để crash API
     try:
         res.raise_for_status()
         data = res.json()
     except Exception:
         print("❌ Wikidata search failed")
-        print("Status:", res.status_code)
-        print("Body:", res.text[:500])
         return []
 
     results = []
@@ -59,10 +73,6 @@ def normalize_name(name: str, limit: int = 5) -> List[Dict]:
 
 
 def normalize_graph_payload(raw_bindings: List[Dict]) -> List[Dict]:
-    """
-    Chuẩn hóa các raw SPARQL bindings để trả về payload đồ thị gọn nhẹ,
-    chỉ giữ lại strictly 'id', 'name', và 'p_label'.
-    """
     normalized = []
     for binding in raw_bindings:
         node_id = binding.get("neighbor", {}).get("value", "").split("/")[-1]
@@ -80,15 +90,14 @@ def normalize_graph_payload(raw_bindings: List[Dict]) -> List[Dict]:
     return normalized
 
 
-def get_edge_properties(path: List[str]) -> Dict[str, str]:
+def get_edge_properties(path: List[str]) -> Dict[str, Dict[str, Any]]:
     """
-    Lấy nhãn thuộc tính (property labels) kết nối giữa các node kề nhau trên path.
-    Trả về dictionary với key là "source_qid->target_qid" và value là "p_label".
+    Lấy thông tin quan hệ giữa các node kề nhau trên path (bao gồm cả property ID và label).
+    Trả về dictionary với key là "source_qid->target_qid" và value là {"p_id": "P...", "p_label": "..."}.
     """
     if len(path) < 2:
         return {}
     
-    # Xây dựng các cặp kề nhau
     pairs = []
     for i in range(len(path) - 1):
         s = path[i]
@@ -98,42 +107,46 @@ def get_edge_properties(path: List[str]) -> Dict[str, str]:
     
     pairs_str = " ".join(pairs)
     query = f"""
-    SELECT DISTINCT ?source ?target ?pLabel WHERE {{
+    SELECT DISTINCT ?source ?target ?property ?pLabel WHERE {{
       VALUES (?source ?target) {{ {pairs_str} }}
       ?source ?p ?target .
       ?property wikibase:directClaim ?p .
       SERVICE wikibase:label {{ bd:serviceParam wikibase:language "en". }}
     }}
     """
-    edge_labels = {}
+    edge_data = {}
     try:
         bindings = wikidata_client.query(query, timeout=8)
         for item in bindings:
             src_uri = item.get("source", {}).get("value", "")
             tgt_uri = item.get("target", {}).get("value", "")
+            prop_uri = item.get("property", {}).get("value", "")
             p_label = item.get("pLabel", {}).get("value", "")
             
-            if src_uri and tgt_uri and p_label:
+            if src_uri and tgt_uri and prop_uri:
                 src_qid = src_uri.split("/")[-1]
                 tgt_qid = tgt_uri.split("/")[-1]
-                # Lưu cả hai chiều để dễ tra cứu
-                edge_labels[f"{src_qid}->{tgt_qid}"] = p_label
-                edge_labels[f"{tgt_qid}->{src_qid}"] = p_label
+                p_id = prop_uri.split("/")[-1]
+                
+                edge_data[f"{src_qid}->{tgt_qid}"] = {
+                    "p_id": p_id,
+                    "p_label": p_label
+                }
     except Exception as e:
         print(f"[WARN] Failed to get edge property labels: {e}")
         
-    return edge_labels
+    return edge_data
 
 
 def minimize_graph_payload(path: List[str]) -> Dict[str, Any]:
     """
     Tiếp nhận danh sách QID trên path, phân giải nhãn thực thể và thuộc tính kết nối,
     trả về cấu trúc đồ thị phẳng cực kỳ tối giản (nodes: id/name, links: source/target/p_label).
+    Có xử lý thuộc tính nghịch đảo cho đường đi ngược.
     """
     if not path:
         return {"nodes": [], "links": []}
     
-    # 1. Phân giải nhãn cho các QID thực thể
     summaries = {}
     try:
         summaries = wikidata_client.get_entity_summaries(path)
@@ -148,14 +161,31 @@ def minimize_graph_payload(path: List[str]) -> Dict[str, Any]:
             "name": name
         })
     
-    # 2. Phân giải nhãn thuộc tính cho các cạnh
-    edge_labels = get_edge_properties(path)
-    
+    edge_data = get_edge_properties(path)
     links = []
+    
     for i in range(len(path) - 1):
         s = path[i]
         t = path[i+1]
-        p_label = edge_labels.get(f"{s}->{t}") or edge_labels.get(f"{t}->{s}") or "connected to"
+        
+        p_label = "connected to"
+        
+        # 1. Kiểm tra xem có quan hệ xuôi s -> t không
+        if f"{s}->{t}" in edge_data:
+            p_label = edge_data[f"{s}->{t}"]["p_label"]
+        # 2. Nếu không có quan hệ xuôi, kiểm tra quan hệ ngược t -> s
+        elif f"{t}->{s}" in edge_data:
+            reverse_relation = edge_data[f"{t}->{s}"]
+            p_id = reverse_relation["p_id"]
+            
+            # Nếu thuộc tính ngược nằm trong INVERSE_PROPERTIES, hoán đổi thuộc tính
+            if p_id in INVERSE_PROPERTIES:
+                inv_p_id = INVERSE_PROPERTIES[p_id]
+                # Lấy nhãn của thuộc tính nghịch đảo
+                p_label = PROPERTY_LABELS_FALLBACK.get(inv_p_id) or inv_p_id
+            else:
+                p_label = f"inverse of {reverse_relation['p_label']}"
+        
         links.append({
             "source": s,
             "target": t,

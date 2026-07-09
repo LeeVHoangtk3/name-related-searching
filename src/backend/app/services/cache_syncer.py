@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+from collections import Counter
 from app.clients.wikidata import wikidata_client
 from app.services.neighbor_wikidata import build_neighbor_query
 from app.core.redis import redis_client
@@ -8,9 +9,40 @@ from app.core.redis import redis_client
 logger = logging.getLogger(__name__)
 
 STRATEGIC_HUBS = ["Q5", "Q30", "Q571", "Q11424", "Q4830453"]
-SYNC_INTERVAL_SECONDS = 12 * 3600  # 12 hours
+SYNC_INTERVAL_SECONDS = 3600  # 1 hour
 HUB_CACHE_TTL_SECONDS = 24 * 3600  # 24 hours
 PREFETCH_LIMIT = 500
+
+def get_dynamic_hubs_from_history(limit: int = 5) -> list:
+    """
+    Quét lịch sử tìm kiếm từ Redis, đếm tần suất xuất hiện của các QID
+    và trả về danh sách các QID xuất hiện nhiều nhất (Dynamic Hubs).
+    """
+    try:
+        records = redis_client.lrange("global_history", 0, -1)
+        if not records:
+            return []
+        
+        qids = []
+        for record in records:
+            try:
+                data = json.loads(record)
+                if "start" in data:
+                    qids.append(data["start"])
+                if "target" in data:
+                    qids.append(data["target"])
+            except Exception:
+                continue
+        
+        if not qids:
+            return []
+        
+        counter = Counter(qids)
+        top_hubs = [qid for qid, _ in counter.most_common(limit)]
+        return top_hubs
+    except Exception as e:
+        logger.warning(f"[WARN] Failed to extract dynamic hubs from history: {e}")
+        return []
 
 async def prefetch_hub_neighbors(hub_qid: str):
     """
@@ -20,7 +52,7 @@ async def prefetch_hub_neighbors(hub_qid: str):
     logger.info(f"[INFO] Pre-fetching neighbors for Hub {hub_qid}...")
     query = build_neighbor_query(hub_qid, limit=PREFETCH_LIMIT)
     try:
-        # Run synchronous Wikidata SPARQL query in thread pool
+        # Run Wikidata query in a separate thread to keep Event Loop non-blocking
         bindings = await asyncio.to_thread(wikidata_client.query, query, timeout=30)
         neighbors = []
         for item in bindings:
@@ -39,13 +71,23 @@ async def prefetch_hub_neighbors(hub_qid: str):
 
 async def sync_hubs_cache_worker():
     """
-    Worker chạy nền tự động đồng bộ cache cho các Hubs chiến lược định kỳ mỗi 12 tiếng.
-    Background worker to automatically sync cache for strategic Hubs every 12 hours.
+    Worker chạy nền tự động đồng bộ cache định kỳ mỗi 1 tiếng.
+    Quét lịch sử tìm kiếm để phát hiện Dynamic Hubs bổ sung vào danh sách pre-fetch.
     """
     logger.info("[INFO] Hubs cache syncer worker started.")
     while True:
         logger.info("[INFO] Starting Hubs Cache pre-fetch...")
-        for hub_qid in STRATEGIC_HUBS:
+        
+        # Kết hợp Strategic Hubs cố định và Dynamic Hubs từ lịch sử
+        hubs_to_sync = list(STRATEGIC_HUBS)
+        dynamic_hubs = get_dynamic_hubs_from_history(limit=5)
+        
+        for dh in dynamic_hubs:
+            if dh not in hubs_to_sync:
+                hubs_to_sync.append(dh)
+                
+        logger.info(f"[INFO] Dynamic and Strategic Hubs to sync: {hubs_to_sync}")
+        for hub_qid in hubs_to_sync:
             await prefetch_hub_neighbors(hub_qid)
         
         logger.info(f"[INFO] Hubs Cache pre-fetch completed. Sleeping for {SYNC_INTERVAL_SECONDS} seconds...")

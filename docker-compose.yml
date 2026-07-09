@@ -15,6 +15,17 @@ services:
       - wikibfs_net
     restart: unless-stopped
 
+  memgraph:
+    image: memgraph/memgraph:latest
+    container_name: wikibfs_memgraph
+    ports:
+      - "7687:7687"
+    volumes:
+      - memgraph_data:/var/lib/memgraph
+    networks:
+      - wikibfs_net
+    restart: unless-stopped
+
   backend:
     build:
       context: ./src/backend
@@ -22,6 +33,7 @@ services:
     container_name: wikibfs_backend
     environment:
       - REDIS_URL=redis://redis:6379/0
+      - MEMGRAPH_URL=bolt://memgraph:7687
       - PYTHONPATH=/workspace
     depends_on:
       redis:
@@ -65,3 +77,4 @@ networks:
 volumes:
   redis_data:
   frontend_assets:
+  memgraph_data:

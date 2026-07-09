@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { Search, Loader2, Share2, History, Info } from 'lucide-react';
+import { Search, Loader2, Share2, History, Info, ChevronLeft, ChevronRight } from 'lucide-react';
 import ConnectionGraph from './components/Graph';
 import ProgressOverlay from './components/ProgressOverlay';
 import { buildGraphData, buildPathNodeLabels } from './lib/graphData';
@@ -26,6 +26,8 @@ function App() {
   const [path, setPath] = useState([]);
   const [history, setHistory] = useState([]);
   const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Trạng thái đóng/mở sidebar
+  
   const latestGraphPathRef = useRef('');
   const eventSourceRef = useRef(null);
 
@@ -49,15 +51,12 @@ function App() {
     }
   }, []);
 
-  // Lấy lịch sử toàn cục khi ứng dụng khởi chạy
-  // Fetch global history on component mount
+  // Lấy lịch sử khi ứng dụng khởi chạy
   useEffect(() => {
     const initialFetchTimer = setTimeout(() => {
       fetchGlobalHistory();
     }, 0);
 
-    // Polling mỗi 30 giây để cập nhật lịch sử mới từ người dùng khác
-    // Poll every 30 seconds to update new history from other users
     const interval = setInterval(fetchGlobalHistory, 30000);
     return () => {
       clearTimeout(initialFetchTimer);
@@ -188,7 +187,6 @@ function App() {
     url.searchParams.append('max_depth', SEARCH_MAX_DEPTH);
     url.searchParams.append('mode', SEARCH_MODE);
 
-    // Close any previous SSE connection to prevent memory leaks
     if (eventSourceRef.current) {
       eventSourceRef.current.close();
     }
@@ -215,12 +213,10 @@ function App() {
         latestGraphPathRef.current = pathKey;
         setGraphData(buildGraphData(foundPath, fallbackLabels));
         void updateGraphLabels(foundPath, fallbackLabels);
-
-        // Cập nhật lại lịch sử toàn cục sau khi tìm kiếm thành công
         fetchGlobalHistory();
       } else {
         latestGraphPathRef.current = '';
-        setError('Không tìm thấy đường nối giữa hai người này.');
+        setError('Không tìm thấy đường nối giữa hai thực thể.');
         setPath([]);
         setGraphData({ nodes: [], links: [] });
       }
@@ -244,12 +240,81 @@ function App() {
     });
   };
 
+  // Click vào lịch sử để tự động chạy lại tìm kiếm
+  const handleHistoryClick = (startVal, targetVal) => {
+    setStartInput(startVal);
+    setStartSelection({ qid: startVal, label: startVal });
+    setTargetInput(targetVal);
+    setTargetSelection({ qid: targetVal, label: targetVal });
+
+    setLoading(true);
+    setError(null);
+    setProgress({ node_id: 'Retrieving history...', total_explored: 0, current_depth: 0, elapsed_seconds: 0 });
+
+    const url = new URL(`${API_BASE_URL}/search/stream`);
+    url.searchParams.append('start', startVal);
+    url.searchParams.append('target', targetVal);
+    url.searchParams.append('max_depth', SEARCH_MAX_DEPTH);
+    url.searchParams.append('mode', SEARCH_MODE);
+
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+    }
+
+    const eventSource = new EventSource(url.toString());
+    eventSourceRef.current = eventSource;
+
+    eventSource.addEventListener('progress', (e) => {
+      const data = JSON.parse(e.data);
+      setProgress(data);
+    });
+
+    eventSource.addEventListener('complete', (e) => {
+      const data = JSON.parse(e.data);
+      if (data.status === 'success') {
+        const foundPath = data.path;
+        setPath(foundPath);
+
+        const fallbackLabels = buildPathNodeLabels(foundPath, {}, {
+          [startVal]: startVal,
+          [targetVal]: targetVal,
+        });
+        const pathKey = foundPath.join('>');
+        latestGraphPathRef.current = pathKey;
+        setGraphData(buildGraphData(foundPath, fallbackLabels));
+        void updateGraphLabels(foundPath, fallbackLabels);
+        fetchGlobalHistory();
+      } else {
+        latestGraphPathRef.current = '';
+        setError('Không tìm thấy đường nối giữa hai thực thể.');
+        setPath([]);
+        setGraphData({ nodes: [], links: [] });
+      }
+      eventSource.close();
+      if (eventSourceRef.current === eventSource) {
+        eventSourceRef.current = null;
+      }
+      setLoading(false);
+      setProgress(null);
+    });
+
+    eventSource.addEventListener('error', (e) => {
+      setError('Đã xảy ra lỗi khi kết nối server.');
+      eventSource.close();
+      if (eventSourceRef.current === eventSource) {
+        eventSourceRef.current = null;
+      }
+      setLoading(false);
+      setProgress(null);
+    });
+  };
+
   return (
     <div className="app-container">
-      {/* Sidebar bên trái chứa form tìm kiếm và lịch sử */}
-      <aside className="sidebar">
+      {/* Sidebar chứa form tìm kiếm và lịch sử */}
+      <aside className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
         <div className="logo">
-          <Share2 size={24} color="#bb86fc" />
+          <Share2 size={24} color="#a855f7" />
           <h1>WikiBFS</h1>
         </div>
 
@@ -329,7 +394,12 @@ function App() {
           <h2 className="section-title"><History size={16} /> Lịch sử toàn cục</h2>
           <ul className="history-list">
             {history.length > 0 ? history.map((item, index) => (
-              <li key={index} className="history-item">
+              <li 
+                key={index} 
+                className="history-item clickable"
+                onClick={() => handleHistoryClick(item.start, item.target)}
+                title={`Chạy lại ${item.start} → ${item.target}`}
+              >
                 <span className="dot"></span>
                 <span className="history-path">{item.start} → {item.target}</span>
               </li>
@@ -338,11 +408,20 @@ function App() {
         </div>
       </aside>
 
+      {/* Nút thu gọn/mở rộng sidebar bay lơ lửng */}
+      <button 
+        className={`sidebar-toggle ${sidebarOpen ? 'open' : 'closed'}`}
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        title={sidebarOpen ? "Thu gọn Sidebar" : "Mở rộng Sidebar"}
+      >
+        {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+      </button>
+
       {/* Main content hiển thị đồ thị và chi tiết */}
       <main className="main-content">
         <header className="main-header">
           <div className="header-info">
-            <h2>Đồ thị liên kết</h2>
+            <h2>Đồ thị liên kết tri thức</h2>
             <div className="stats">
               <span>Nodes: {graphData.nodes.length}</span>
               <span>Edges: {graphData.links.length}</span>
@@ -360,16 +439,16 @@ function App() {
           ) : (
             <div className="empty-graph">
               <div className="graph-placeholder">
-                <Share2 size={64} color="#333" />
+                <Share2 size={64} color="#444" />
               </div>
-              <p>Kết quả tìm kiếm sẽ hiển thị tại đây.</p>
+              <p>Nhập thực thể và bắt đầu tìm kiếm đường nối.</p>
             </div>
           )}
         </div>
 
         {path.length > 0 && (
           <div className="path-display">
-            <h3>Đường đi chi tiết:</h3>
+            <h3>Đường đi ngắn nhất:</h3>
             <div className="path-sequence">
               {path.map((id, index) => (
                 <React.Fragment key={id}>
