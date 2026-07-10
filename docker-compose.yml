@@ -11,6 +11,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    ports:
+      - "6379:6379"
     networks:
       - wikibfs_net
     restart: unless-stopped

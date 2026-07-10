@@ -154,7 +154,7 @@ async def search_path_stream(
             graph_payload = minimize_graph_payload(cached_path)
             yield {
                 "event": "complete",
-                "data": json.dumps({"status": "success", "graph": graph_payload, "source": "cache"})
+                "data": json.dumps({"status": "success", "path": cached_path, "graph": graph_payload, "source": "cache"})
             }
             return
 
@@ -192,7 +192,7 @@ async def search_path_stream(
                     graph_payload = minimize_graph_payload(path)
                     yield {
                         "event": "complete",
-                        "data": json.dumps({"status": "success", "graph": graph_payload, "source": "api"})
+                        "data": json.dumps({"status": "success", "path": path, "graph": graph_payload, "source": "api"})
                     }
                     return
                 elif update["type"] == "no_path":

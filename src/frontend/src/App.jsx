@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import axios from 'axios';
-import { Search, Loader2, Share2, History, Info, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Loader2, Share2, History, Info } from 'lucide-react';
 import ConnectionGraph from './components/Graph';
 import ProgressOverlay from './components/ProgressOverlay';
 import { buildGraphData, buildPathNodeLabels } from './lib/graphData';
@@ -26,8 +26,10 @@ function App() {
   const [path, setPath] = useState([]);
   const [history, setHistory] = useState([]);
   const [error, setError] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true); // Trạng thái đóng/mở sidebar
   
+  // activeTab có thể là 'search', 'history' hoặc null (khi thanh panel trượt đóng)
+  const [activeTab, setActiveTab] = useState('search');
+
   const latestGraphPathRef = useRef('');
   const eventSourceRef = useRef(null);
 
@@ -82,7 +84,7 @@ function App() {
         action: 'wbgetentities',
         ids: pathIds.join('|'),
         languages: 'en',
-        props: 'labels',
+        props: 'labels|sitelinks',
         format: 'json',
         origin: '*',
       },
@@ -91,23 +93,57 @@ function App() {
     const entities = response.data?.entities || {};
     const entitySummaries = {};
     for (const qid of pathIds) {
+      const entity = entities[qid] || {};
+      const label = entity.labels?.en?.value || '';
+      
+      // Resolve Vietnamese Wikipedia first, fallback to English
+      let wikipediaUrl = '';
+      const sitelinks = entity.sitelinks || {};
+      if (sitelinks.viwiki) {
+        wikipediaUrl = `https://vi.wikipedia.org/wiki/${encodeURIComponent(sitelinks.viwiki.title.replace(/ /g, '_'))}`;
+      } else if (sitelinks.enwiki) {
+        wikipediaUrl = `https://en.wikipedia.org/wiki/${encodeURIComponent(sitelinks.enwiki.title.replace(/ /g, '_'))}`;
+      } else {
+        wikipediaUrl = label 
+          ? `https://en.wikipedia.org/wiki/${encodeURIComponent(label.replace(/ /g, '_'))}` 
+          : `https://www.wikidata.org/wiki/${qid}`;
+      }
+
       entitySummaries[qid] = {
-        label: entities[qid]?.labels?.en?.value || '',
+        label: label,
+        wikipediaUrl: wikipediaUrl
       };
     }
 
-    return buildPathNodeLabels(pathIds, entitySummaries, fallbackLabels);
+    return entitySummaries;
   }, []);
 
   const updateGraphLabels = useCallback(async (pathIds, fallbackLabels) => {
     const pathKey = pathIds.join('>');
 
     try {
-      const labels = await fetchPathLabels(pathIds, fallbackLabels);
+      const entitySummaries = await fetchPathLabels(pathIds, fallbackLabels);
       if (latestGraphPathRef.current !== pathKey) {
         return;
       }
+
+      const labels = {};
+      const pathObjects = [];
+      for (const qid of pathIds) {
+        const summaryLabel = entitySummaries[qid]?.label?.trim?.() || '';
+        const fallbackLabel = fallbackLabels[qid]?.trim?.() || '';
+        const label = summaryLabel || fallbackLabel || qid;
+        labels[qid] = label;
+
+        pathObjects.push({
+          qid: qid,
+          label: label,
+          wikipediaUrl: entitySummaries[qid]?.wikipediaUrl || `https://www.wikidata.org/wiki/${qid}`
+        });
+      }
+
       setGraphData(buildGraphData(pathIds, labels));
+      setPath(pathObjects);
     } catch (err) {
       console.error('Failed to fetch path labels', err);
     }
@@ -180,6 +216,9 @@ function App() {
     setLoading(true);
     setError(null);
     setProgress({ node_id: 'Initializing...', total_explored: 0, current_depth: 0, elapsed_seconds: 0 });
+    
+    // Tự động đóng bảng panel để tối ưu không gian hiển thị đồ thị khi tìm kiếm
+    setActiveTab(null);
 
     const url = new URL(`${API_BASE_URL}/search/stream`);
     url.searchParams.append('start', startValue);
@@ -202,8 +241,14 @@ function App() {
     eventSource.addEventListener('complete', (e) => {
       const data = JSON.parse(e.data);
       if (data.status === 'success') {
-        const foundPath = data.path;
-        setPath(foundPath);
+        // Lấy danh sách QID thực sự từ data.path (được backend trả về)
+        const foundPath = data.path || [];
+        const initialPathObjects = foundPath.map(qid => ({
+          qid: qid,
+          label: qid,
+          wikipediaUrl: `https://www.wikidata.org/wiki/${qid}`
+        }));
+        setPath(initialPathObjects);
 
         const fallbackLabels = buildPathNodeLabels(foundPath, {}, {
           [startValue]: startSelection?.label || (QID_PATTERN.test(startInput.trim()) ? '' : startInput.trim()),
@@ -211,12 +256,14 @@ function App() {
         });
         const pathKey = foundPath.join('>');
         latestGraphPathRef.current = pathKey;
+        
+        // Khởi tạo đồ thị với nhãn thu gọn ban đầu, sau đó cập nhật nhãn đầy đủ từ Wikidata
         setGraphData(buildGraphData(foundPath, fallbackLabels));
         void updateGraphLabels(foundPath, fallbackLabels);
         fetchGlobalHistory();
       } else {
         latestGraphPathRef.current = '';
-        setError('Không tìm thấy đường nối giữa hai thực thể.');
+        setError('No path found between the two entities.');
         setPath([]);
         setGraphData({ nodes: [], links: [] });
       }
@@ -229,7 +276,7 @@ function App() {
     });
 
     eventSource.addEventListener('error', (e) => {
-      setError('Đã xảy ra lỗi khi kết nối server.');
+      setError('An error occurred while connecting to the server.');
       console.error("EventSource error:", e);
       eventSource.close();
       if (eventSourceRef.current === eventSource) {
@@ -240,7 +287,7 @@ function App() {
     });
   };
 
-  // Click vào lịch sử để tự động chạy lại tìm kiếm
+  // Xem lại lịch sử (Replay)
   const handleHistoryClick = (startVal, targetVal) => {
     setStartInput(startVal);
     setStartSelection({ qid: startVal, label: startVal });
@@ -250,6 +297,9 @@ function App() {
     setLoading(true);
     setError(null);
     setProgress({ node_id: 'Retrieving history...', total_explored: 0, current_depth: 0, elapsed_seconds: 0 });
+    
+    // Tự động đóng bảng panel để xem đồ thị tối đa
+    setActiveTab(null);
 
     const url = new URL(`${API_BASE_URL}/search/stream`);
     url.searchParams.append('start', startVal);
@@ -272,8 +322,13 @@ function App() {
     eventSource.addEventListener('complete', (e) => {
       const data = JSON.parse(e.data);
       if (data.status === 'success') {
-        const foundPath = data.path;
-        setPath(foundPath);
+        const foundPath = data.path || [];
+        const initialPathObjects = foundPath.map(qid => ({
+          qid: qid,
+          label: qid,
+          wikipediaUrl: `https://www.wikidata.org/wiki/${qid}`
+        }));
+        setPath(initialPathObjects);
 
         const fallbackLabels = buildPathNodeLabels(foundPath, {}, {
           [startVal]: startVal,
@@ -286,7 +341,7 @@ function App() {
         fetchGlobalHistory();
       } else {
         latestGraphPathRef.current = '';
-        setError('Không tìm thấy đường nối giữa hai thực thể.');
+        setError('No path found between the two entities.');
         setPath([]);
         setGraphData({ nodes: [], links: [] });
       }
@@ -299,7 +354,7 @@ function App() {
     });
 
     eventSource.addEventListener('error', (e) => {
-      setError('Đã xảy ra lỗi khi kết nối server.');
+      setError('An error occurred while connecting to the server.');
       eventSource.close();
       if (eventSourceRef.current === eventSource) {
         eventSourceRef.current = null;
@@ -309,126 +364,153 @@ function App() {
     });
   };
 
+  const toggleTab = (tabName) => {
+    setActiveTab(activeTab === tabName ? null : tabName);
+  };
+
   return (
     <div className="app-container">
-      {/* Sidebar chứa form tìm kiếm và lịch sử */}
-      <aside className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
-        <div className="logo">
-          <Share2 size={24} color="#a855f7" />
-          <h1>WikiBFS</h1>
+      {/* 1. Left Dock cố định (Fixed Bar) - Chứa Logo và các nút Tab điều hướng */}
+      <aside className="left-dock">
+        <div className="dock-logo" title="WikiBFS">
+          <Share2 size={26} color="#facc15" className="logo-icon" />
         </div>
 
-        <div className="search-section">
-          <h2 className="section-title">Tìm kiếm liên kết</h2>
-          <div className="input-group">
-            <label>BẮT ĐẦU (WIKIDATA ID)</label>
-            <div className="input-with-suggestions">
-              <input
-                type="text"
-                placeholder="Ví dụ: J.K. Rowling hoặc Q34660"
-                value={startInput}
-                onChange={(e) => handleStartChange(e.target.value)}
-                onBlur={() => setTimeout(() => setStartSuggestions([]), 150)}
-              />
-              {startSuggestions.length > 0 && (
-                <ul className="suggestion-list">
-                  {startSuggestions.map((item) => (
-                    <li
-                      key={`start-${item.qid}`}
-                      className="suggestion-item"
-                      onMouseDown={() => handleSuggestionSelect('start', item)}
-                    >
-                      <span className="suggestion-label">{item.label}</span>
-                      <span className="suggestion-meta">
-                        {item.qid}
-                        {item.source === 'history' ? ' · history' : ''}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-          <div className="input-group">
-            <label>ĐÍCH ĐẾN (WIKIDATA ID)</label>
-            <div className="input-with-suggestions">
-              <input
-                type="text"
-                placeholder="Ví dụ: Neil Gaiman hoặc Q173746"
-                value={targetInput}
-                onChange={(e) => handleTargetChange(e.target.value)}
-                onBlur={() => setTimeout(() => setTargetSuggestions([]), 150)}
-              />
-              {targetSuggestions.length > 0 && (
-                <ul className="suggestion-list">
-                  {targetSuggestions.map((item) => (
-                    <li
-                      key={`target-${item.qid}`}
-                      className="suggestion-item"
-                      onMouseDown={() => handleSuggestionSelect('target', item)}
-                    >
-                      <span className="suggestion-label">{item.label}</span>
-                      <span className="suggestion-meta">
-                        {item.qid}
-                        {item.source === 'history' ? ' · history' : ''}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </div>
-          <button
-            className="search-button"
-            onClick={handleSearch}
-            disabled={loading}
+        <div className="dock-tabs">
+          <button 
+            className={`dock-tab-btn ${activeTab === 'search' ? 'active' : ''}`}
+            onClick={() => toggleTab('search')}
+            title="Search Links"
           >
-            {loading ? <Loader2 className="animate-spin" /> : <Search size={18} />}
-            <span>TÌM KIẾM PATH</span>
+            <Search size={22} />
+          </button>
+          
+          <button 
+            className={`dock-tab-btn ${activeTab === 'history' ? 'active' : ''}`}
+            onClick={() => toggleTab('history')}
+            title="Search History"
+          >
+            <History size={22} />
           </button>
         </div>
 
-        {error && <div className="error-message">{error}</div>}
-
-        <div className="history-section">
-          <h2 className="section-title"><History size={16} /> Lịch sử toàn cục</h2>
-          <ul className="history-list">
-            {history.length > 0 ? history.map((item, index) => (
-              <li 
-                key={index} 
-                className="history-item clickable"
-                onClick={() => handleHistoryClick(item.start, item.target)}
-                title={`Chạy lại ${item.start} → ${item.target}`}
-              >
-                <span className="dot"></span>
-                <span className="history-path">{item.start} → {item.target}</span>
-              </li>
-            )) : <p className="empty-text">Chưa có tìm kiếm nào.</p>}
-          </ul>
+        <div className="dock-footer">
+          <Info size={20} className="info-icon" title="About Application" />
         </div>
       </aside>
 
-      {/* Nút thu gọn/mở rộng sidebar bay lơ lửng */}
-      <button 
-        className={`sidebar-toggle ${sidebarOpen ? 'open' : 'closed'}`}
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        title={sidebarOpen ? "Thu gọn Sidebar" : "Mở rộng Sidebar"}
-      >
-        {sidebarOpen ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
-      </button>
+      {/* 2. Sliding Panel (Bảng nội dung trượt) - Hiển thị tùy theo tab đang chọn */}
+      <div className={`sliding-panel ${activeTab ? 'open' : 'closed'}`}>
+        {activeTab === 'search' && (
+          <div className="panel-content">
+            <h2 className="panel-title">Search Links</h2>
+            
+            <div className="input-group">
+              <label>START ENTITY (WIKIDATA ID)</label>
+              <div className="input-with-suggestions">
+                <input
+                  type="text"
+                  placeholder="e.g. J.K. Rowling or Q34660"
+                  value={startInput}
+                  onChange={(e) => handleStartChange(e.target.value)}
+                  onBlur={() => setTimeout(() => setStartSuggestions([]), 150)}
+                />
+                {startSuggestions.length > 0 && (
+                  <ul className="suggestion-list">
+                    {startSuggestions.map((item) => (
+                      <li
+                        key={`start-${item.qid}`}
+                        className="suggestion-item"
+                        onMouseDown={() => handleSuggestionSelect('start', item)}
+                      >
+                        <span className="suggestion-label">{item.label}</span>
+                        <span className="suggestion-meta">
+                          {item.qid}
+                          {item.source === 'history' ? ' · history' : ''}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
 
-      {/* Main content hiển thị đồ thị và chi tiết */}
+            <div className="input-group">
+              <label>TARGET ENTITY (WIKIDATA ID)</label>
+              <div className="input-with-suggestions">
+                <input
+                  type="text"
+                  placeholder="e.g. Neil Gaiman or Q173746"
+                  value={targetInput}
+                  onChange={(e) => handleTargetChange(e.target.value)}
+                  onBlur={() => setTimeout(() => setTargetSuggestions([]), 150)}
+                />
+                {targetSuggestions.length > 0 && (
+                  <ul className="suggestion-list">
+                    {targetSuggestions.map((item) => (
+                      <li
+                        key={`target-${item.qid}`}
+                        className="suggestion-item"
+                        onMouseDown={() => handleSuggestionSelect('target', item)}
+                      >
+                        <span className="suggestion-label">{item.label}</span>
+                        <span className="suggestion-meta">
+                          {item.qid}
+                          {item.source === 'history' ? ' · history' : ''}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+
+            <button
+              className="search-button game-btn"
+              onClick={handleSearch}
+              disabled={loading}
+            >
+              <div>
+                <span>
+                  {loading ? <Loader2 className="animate-spin" /> : <Search size={18} />}
+                  FIND PATH
+                </span>
+              </div>
+            </button>
+
+            {error && <div className="error-message">{error}</div>}
+          </div>
+        )}
+
+        {activeTab === 'history' && (
+          <div className="panel-content">
+            <h2 className="panel-title">Search History</h2>
+            <ul className="history-list">
+              {history.length > 0 ? history.map((item, index) => (
+                <li 
+                  key={index} 
+                  className="history-item clickable"
+                  onClick={() => handleHistoryClick(item.start, item.target)}
+                  title={`Click to replay path ${item.start} → ${item.target}`}
+                >
+                  <span className="dot"></span>
+                  <span className="history-path">{item.start} → {item.target}</span>
+                </li>
+              )) : <p className="empty-text">No searches yet.</p>}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {/* 3. Main content hiển thị đồ thị và chi tiết */}
       <main className="main-content">
         <header className="main-header">
           <div className="header-info">
-            <h2>Đồ thị liên kết tri thức</h2>
+            <h2>Knowledge Link Graph</h2>
             <div className="stats">
               <span>Nodes: {graphData.nodes.length}</span>
               <span>Edges: {graphData.links.length}</span>
             </div>
-          </div>
-          <div className="header-actions">
-            <Info size={20} className="info-icon" />
           </div>
         </header>
 
@@ -439,20 +521,28 @@ function App() {
           ) : (
             <div className="empty-graph">
               <div className="graph-placeholder">
-                <Share2 size={64} color="#444" />
+                <Share2 size={64} color="#facc15" />
               </div>
-              <p>Nhập thực thể và bắt đầu tìm kiếm đường nối.</p>
+              <p>Enter entities and start searching for links.</p>
             </div>
           )}
         </div>
 
         {path.length > 0 && (
           <div className="path-display">
-            <h3>Đường đi ngắn nhất:</h3>
+            <h3>Shortest Path:</h3>
             <div className="path-sequence">
-              {path.map((id, index) => (
-                <React.Fragment key={id}>
-                  <span className="path-node">{id}</span>
+              {path.map((node, index) => (
+                <React.Fragment key={node.qid || node}>
+                  <a 
+                    href={node.wikipediaUrl || `https://www.wikidata.org/wiki/${node.qid || node}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="path-node"
+                    title={`View Wikipedia for ${node.label || node.qid || node}`}
+                  >
+                    {node.label || node.qid || node}
+                  </a>
                   {index < path.length - 1 && <span className="path-arrow">→</span>}
                 </React.Fragment>
               ))}

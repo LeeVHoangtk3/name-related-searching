@@ -59,34 +59,38 @@ const ConnectionGraph = ({ data }) => {
         ref={fgRef}
         graphData={data}
         nodeLabel={(node) => `${node.name} (${node.id})`}
-        nodeColor={() => '#bb86fc'}
-        linkColor={() => '#03dac6'}
-        linkDirectionalArrowLength={3.5}
+        nodeColor={() => '#facc15'}
+        linkColor={() => '#292524'}
+        linkWidth={2.5}
+        linkDirectionalArrowLength={4}
         linkDirectionalArrowRelPos={1}
         cooldownTicks={isLargeGraph ? 50 : 100} // Limit simulation run calculations for large graph
         nodeCanvasObject={(node, ctx, globalScale) => {
-          // Draw node circle
+          // Draw node circle with thick dark border
           ctx.beginPath();
           ctx.arc(node.x, node.y, NODE_RADIUS, 0, 2 * Math.PI, false);
-          ctx.fillStyle = '#bb86fc';
+          ctx.fillStyle = '#facc15';
           ctx.fill();
+          ctx.lineWidth = 1.5;
+          ctx.strokeStyle = '#292524';
+          ctx.stroke();
 
           // Only render text label details when zoomed in close enough or on small graphs
           if (globalScale >= 1.5 || !isLargeGraph) {
             const label = node.name || node.id;
             const fontSize = isLargeGraph ? (10 / globalScale) : (14 / globalScale);
-            ctx.font = `${fontSize}px Inter, sans-serif`;
+            ctx.font = `bold ${fontSize}px Poppins, sans-serif`;
             const textWidth = ctx.measureText(label).width;
             const bckgDimensions = [textWidth, fontSize].map((dimension) => dimension + fontSize * 0.55);
 
             // Draw background rectangle for readability
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+            ctx.fillStyle = '#292524';
             ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
 
             // Draw text
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.fillStyle = '#fff';
+            ctx.fillStyle = '#fafaf9';
             ctx.fillText(label, node.x, node.y);
           }
         }}

@@ -38,7 +38,7 @@ async def test_search_stream_cached():
     assert events == [
         {
             "event": "complete",
-            "data": json.dumps({"status": "success", "graph": mock_graph, "source": "cache"}),
+            "data": json.dumps({"status": "success", "path": ["Q1", "Q2"], "graph": mock_graph, "source": "cache"}),
         }
     ]
     mock_get_cache.assert_called_once_with("path:Q1:Q2:fast:6")
@@ -68,7 +68,7 @@ async def test_search_stream_calculation():
     }
     assert events[1] == {
         "event": "complete",
-        "data": json.dumps({"status": "success", "graph": mock_graph, "source": "api"}),
+        "data": json.dumps({"status": "success", "path": ["Q1", "Q3", "Q2"], "graph": mock_graph, "source": "api"}),
     }
     mock_get_cache.assert_called_once_with("path:Q1:Q2:fast:6")
     mock_set_cache.assert_called_once_with("path:Q1:Q2:fast:6", ["Q1", "Q3", "Q2"])

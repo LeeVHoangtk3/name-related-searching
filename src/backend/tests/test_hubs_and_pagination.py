@@ -1,5 +1,6 @@
 import unittest
 import json
+import redis
 from unittest.mock import patch, MagicMock
 from app.core.redis import get_history_paginated, _memory_history
 from app.api.routes import get_global_history
@@ -10,7 +11,8 @@ class HubsAndPaginationTests(unittest.TestCase):
     def setUp(self):
         _memory_history.clear()
 
-    def test_get_history_paginated_fallback(self):
+    @patch("app.core.redis.redis_client.llen", side_effect=redis.exceptions.ConnectionError("Mock Connection Error"))
+    def test_get_history_paginated_fallback(self, mock_llen):
         # Populate mock memory history
         for i in range(15):
             _memory_history.append({"start": f"Q{i}", "target": f"Q{i+1}"})
